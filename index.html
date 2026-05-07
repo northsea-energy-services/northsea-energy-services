@@ -9,45 +9,56 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #081a2b;
+    background: #071726;
     color: white;
 }
 
-header {
+/* NAV */
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
     background: #050f1a;
-    padding: 20px;
-    text-align: center;
-    border-bottom: 2px solid #f4b400;
+    padding: 15px;
+    position: sticky;
+    top: 0;
 }
 
-header h1 {
-    margin: 0;
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
     color: #f4b400;
-    letter-spacing: 1px;
 }
 
+/* HERO */
 .hero {
     background: url('https://images.unsplash.com/photo-1581092160607-4f4c1f1c6b0c') center/cover;
     padding: 120px 20px;
     text-align: center;
 }
 
-.hero h2 {
-    font-size: 42px;
-    margin-bottom: 10px;
-}
-
-.overlay {
+.hero-box {
     background: rgba(0,0,0,0.6);
-    padding: 40px;
     display: inline-block;
+    padding: 40px;
     border-radius: 10px;
 }
 
-.section {
+.hero h1 {
+    margin: 0;
+    font-size: 42px;
+    color: #f4b400;
+}
+
+/* SECTIONS */
+section {
     max-width: 1000px;
     margin: auto;
-    padding: 50px 20px;
+    padding: 60px 20px;
 }
 
 .card {
@@ -58,7 +69,8 @@ header h1 {
     border-radius: 6px;
 }
 
-.footer {
+/* FOOTER */
+footer {
     text-align: center;
     padding: 20px;
     background: #050f1a;
@@ -69,52 +81,65 @@ header h1 {
 
 <body>
 
-<header>
-<h1>NorthSea Energy Services</h1>
-<p>Offshore Oil & Energy Engineering Solutions</p>
-</header>
+<nav>
+<a href="#about">About</a>
+<a href="#services">Services</a>
+<a href="#projects">Projects</a>
+<a href="#safety">Safety</a>
+<a href="#contact">Contact</a>
+</nav>
 
 <div class="hero">
-<div class="overlay">
-<h2>Engineering Strength. Delivering Energy.</h2>
-<p>Offshore • Oil & Gas • Industrial Engineering Support</p>
+<div class="hero-box">
+<h1>NorthSea Energy Services</h1>
+<p>Offshore Oil & Gas Engineering Solutions</p>
 </div>
 </div>
 
-<div class="section">
+<section id="about">
 <h2>About Us</h2>
 <div class="card">
-NorthSea Energy Services is an offshore-focused engineering company providing
-maintenance, fabrication, and support services for oil and gas operations.
+NorthSea Energy Services provides offshore engineering support, maintenance,
+and fabrication services for oil and gas operations across industrial environments.
 </div>
-</div>
+</section>
 
-<div class="section">
-<h2>Core Services</h2>
+<section id="services">
+<h2>Services</h2>
 <div class="card">Offshore Platform Maintenance</div>
 <div class="card">Oil & Gas Engineering Support</div>
-<div class="card">Structural Welding & Fabrication</div>
-<div class="card">Inspection & Safety Compliance</div>
-</div>
+<div class="card">Welding & Structural Fabrication</div>
+<div class="card">Inspection & Compliance Services</div>
+</section>
 
-<div class="section">
+<section id="projects">
+<h2>Projects</h2>
+<div class="card">
+North Sea Offshore Platform Maintenance – Structural reinforcement and systems upgrade.
+</div>
+<div class="card">
+Industrial Fabrication Project – Heavy steel framework for offshore installation.
+</div>
+</section>
+
+<section id="safety">
 <h2>Safety Commitment</h2>
 <div class="card">
-We operate under strict offshore safety standards and prioritize risk management,
-compliance, and operational integrity.
+We follow strict offshore safety regulations, risk management procedures,
+and compliance standards to ensure safe operations at all times.
 </div>
-</div>
+</section>
 
-<div class="section">
+<section id="contact">
 <h2>Contact</h2>
 <div class="card">
 Email: northseaenergyservices@gmail.com
 </div>
-</div>
+</section>
 
-<div class="footer">
+<footer>
 © 2026 NorthSea Energy Services | Offshore Engineering Division
-</div>
+</footer>
 
 </body>
 </html>
