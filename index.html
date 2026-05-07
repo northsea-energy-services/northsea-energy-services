@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NorthSea Energy | Offshore Control Platform</title>
+<title>NorthSea Enterprise Control Center</title>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
@@ -15,10 +18,39 @@
 }
 
 body{
-    background:#050b14;
+    background:#040811;
     color:white;
     overflow-x:hidden;
-    transition:0.3s;
+}
+
+/* LOADER */
+#loader{
+    position:fixed;
+    inset:0;
+    background:black;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:9999;
+}
+
+.loader-circle{
+    width:80px;
+    height:80px;
+    border:6px solid #111;
+    border-top:6px solid #00d9ff;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg);}
+}
+
+#loader p{
+    margin-top:20px;
+    color:#00d9ff;
 }
 
 /* SIDEBAR */
@@ -26,38 +58,32 @@ body{
     position:fixed;
     left:0;
     top:0;
-    width:250px;
+    width:260px;
     height:100%;
     background:#07101d;
     border-right:1px solid #1f2a44;
     padding:25px;
+    transition:0.3s;
     z-index:1000;
 }
 
+.sidebar.collapsed{
+    width:90px;
+}
+
 .logo{
-    display:flex;
-    align-items:center;
-    gap:10px;
     color:#00d9ff;
     font-size:24px;
     font-weight:bold;
     margin-bottom:40px;
 }
 
-.logo-circle{
-    width:16px;
-    height:16px;
-    border-radius:50%;
-    background:#00d9ff;
-    box-shadow:0 0 10px #00d9ff;
-}
-
 .sidebar a{
     display:block;
     color:#ccc;
     text-decoration:none;
+    margin-bottom:12px;
     padding:14px;
-    margin-bottom:10px;
     border-radius:8px;
     transition:0.3s;
 }
@@ -69,8 +95,13 @@ body{
 
 /* MAIN */
 .main{
-    margin-left:250px;
+    margin-left:260px;
     padding:30px;
+    transition:0.3s;
+}
+
+.main.expanded{
+    margin-left:90px;
 }
 
 /* TOPBAR */
@@ -81,51 +112,30 @@ body{
     margin-bottom:25px;
 }
 
-.topbar h1{
-    color:#00d9ff;
-}
-
-.top-actions{
+.top-left{
     display:flex;
-    gap:10px;
+    align-items:center;
+    gap:15px;
 }
 
-.top-actions button{
-    padding:10px 15px;
-    border:none;
+#menuBtn{
     background:#00d9ff;
-    color:black;
-    border-radius:6px;
+    border:none;
+    padding:10px 15px;
     cursor:pointer;
+    border-radius:6px;
     font-weight:bold;
 }
 
-/* HERO */
-.hero{
-    background:
-    linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.85)),
-    url('https://picsum.photos/1920/1080?offshore-platform') center/cover;
-    border-radius:15px;
-    padding:70px 50px;
-}
-
-.hero h2{
-    font-size:52px;
+.clock{
     color:#00d9ff;
-}
-
-.hero p{
-    margin-top:15px;
-    color:#ddd;
-    max-width:700px;
 }
 
 /* GRID */
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
     gap:20px;
-    margin-top:25px;
 }
 
 /* CARDS */
@@ -142,6 +152,12 @@ body{
     margin-bottom:10px;
 }
 
+.kpi{
+    font-size:38px;
+    color:#00d9ff;
+    margin-top:10px;
+}
+
 /* LIVE DOT */
 .live{
     width:12px;
@@ -152,7 +168,7 @@ body{
     top:20px;
     right:20px;
     box-shadow:0 0 12px lime;
-    animation:pulse 1.5s infinite;
+    animation:pulse 1.2s infinite;
 }
 
 @keyframes pulse{
@@ -161,35 +177,14 @@ body{
     100%{opacity:1;}
 }
 
-/* METERS */
-.meter{
-    margin-top:15px;
-    height:10px;
-    background:#111;
-    border-radius:10px;
-    overflow:hidden;
-}
-
-.fill{
-    height:100%;
-    background:#00d9ff;
-    width:70%;
-    animation:move 4s infinite alternate;
-}
-
-@keyframes move{
-    from{width:35%;}
-    to{width:95%;}
-}
-
 /* TERMINAL */
 .terminal{
-    margin-top:25px;
+    margin-top:30px;
     background:black;
     color:#00ff88;
     padding:25px;
     border-radius:12px;
-    height:260px;
+    height:250px;
     overflow:auto;
     border:1px solid #1f2a44;
     font-family:monospace;
@@ -199,169 +194,93 @@ body{
     margin-bottom:10px;
 }
 
-/* ANALYTICS */
-.analytics{
-    display:flex;
-    align-items:flex-end;
-    gap:12px;
-    height:220px;
-    margin-top:20px;
+/* NOTIFICATIONS */
+.notifications{
+    margin-top:30px;
 }
 
-.bar{
-    flex:1;
-    background:#00d9ff;
-    border-radius:6px 6px 0 0;
-    animation:bars 3s infinite alternate;
-}
-
-.bar:nth-child(1){height:40%;}
-.bar:nth-child(2){height:70%;}
-.bar:nth-child(3){height:55%;}
-.bar:nth-child(4){height:90%;}
-.bar:nth-child(5){height:60%;}
-
-@keyframes bars{
-    from{opacity:0.5;}
-    to{opacity:1;}
-}
-
-/* PROJECTS */
-.projects{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-    gap:20px;
-    margin-top:20px;
-}
-
-.project{
-    background:#0f172a;
-    border:1px solid #1f2a44;
-    border-radius:12px;
-    overflow:hidden;
-    transition:0.3s;
-}
-
-.project:hover{
-    transform:translateY(-8px);
-    border-color:#00d9ff;
-}
-
-.project img{
-    width:100%;
-    height:220px;
-    object-fit:cover;
-}
-
-.project-info{
-    padding:20px;
-}
-
-.project-info h3{
-    color:#00d9ff;
+.notification{
+    background:#111827;
+    border-left:4px solid orange;
+    padding:15px;
     margin-bottom:10px;
+    border-radius:8px;
 }
 
-/* WEATHER */
-.weather{
+/* PROFILE */
+.profile{
     display:flex;
-    justify-content:space-between;
     align-items:center;
+    gap:15px;
 }
 
-.weather-temp{
-    font-size:48px;
-    color:#00d9ff;
+.profile img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
 }
 
-/* MAP */
-.map{
-    width:100%;
-    height:300px;
+/* CHART */
+.chart-container{
+    margin-top:30px;
+    background:#0f172a;
+    padding:20px;
     border-radius:12px;
-    overflow:hidden;
-    margin-top:20px;
     border:1px solid #1f2a44;
 }
 
-.map iframe{
-    width:100%;
-    height:100%;
-    border:none;
-}
-
-/* CONTACT */
-.contact{
+/* GAUGE */
+.gauge{
     margin-top:20px;
-    max-width:600px;
+    height:12px;
+    background:#111;
+    border-radius:10px;
+    overflow:hidden;
 }
 
-.contact input,
-.contact textarea{
-    width:100%;
-    padding:12px;
-    margin-bottom:15px;
-    border:none;
-    border-radius:6px;
-}
-
-.contact button{
-    width:100%;
-    padding:12px;
+.gauge-fill{
+    height:100%;
+    width:80%;
     background:#00d9ff;
-    border:none;
-    font-weight:bold;
-    cursor:pointer;
+    animation:gaugeMove 4s infinite alternate;
+}
+
+@keyframes gaugeMove{
+    from{width:35%;}
+    to{width:95%;}
+}
+
+/* SECTION TITLES */
+.section-title{
+    margin-top:50px;
+    margin-bottom:20px;
+    font-size:30px;
+    color:#00d9ff;
 }
 
 /* FOOTER */
 footer{
     text-align:center;
     margin-top:60px;
-    padding:20px;
     color:#aaa;
-}
-
-/* LIGHT MODE */
-.light-mode{
-    background:#f4f4f4;
-    color:black;
-}
-
-.light-mode .card,
-.light-mode .project,
-.light-mode .sidebar{
-    background:white;
-    color:black;
-}
-
-/* SECTION TITLE */
-.section-title{
-    margin-top:50px;
-    margin-bottom:20px;
-    font-size:32px;
-    color:#00d9ff;
+    padding:20px;
 }
 
 /* MOBILE */
 @media(max-width:900px){
 
 .sidebar{
-    position:relative;
     width:100%;
     height:auto;
+    position:relative;
 }
 
 .main{
     margin-left:0;
 }
 
-.hero{
-    padding:40px 20px;
-}
-
-.hero h2{
-    font-size:38px;
+.main.expanded{
+    margin-left:0;
 }
 
 }
@@ -370,231 +289,174 @@ footer{
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
+<!-- LOADER -->
+<div id="loader">
 
-<div class="logo">
-<div class="logo-circle"></div>
-NorthSea OS
+<div class="loader-circle"></div>
+
+<p>Initializing Offshore Systems...</p>
+
 </div>
 
-<a href="#overview">Overview</a>
-<a href="#systems">Systems</a>
-<a href="#terminal">Terminal</a>
-<a href="#analytics">Analytics</a>
-<a href="#projects">Projects</a>
-<a href="#weather">Weather</a>
-<a href="#map">Map</a>
-<a href="#contact">Contact</a>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+
+<div class="logo">NorthSea OS</div>
+
+<a href="#">Overview</a>
+<a href="#">Live Systems</a>
+<a href="#">Analytics</a>
+<a href="#">Terminal</a>
+<a href="#">Alerts</a>
+<a href="#">Weather</a>
+<a href="#">Security</a>
+<a href="#">Settings</a>
 
 </div>
 
 <!-- MAIN -->
-<div class="main">
+<div class="main" id="main">
 
 <!-- TOPBAR -->
 <div class="topbar">
 
-<h1>Offshore Operations Dashboard</h1>
+<div class="top-left">
 
-<div class="top-actions">
+<button id="menuBtn">☰</button>
 
-<button onclick="toggleMode()">Toggle Theme</button>
+<div class="clock" id="clock"></div>
 
-<button onclick="refreshData()">Refresh</button>
+</div>
 
+<div class="profile">
+
+<img src="https://picsum.photos/100">
+
+<div>
+<h4>Operations Manager</h4>
+<p style="color:#00ff88;">ONLINE</p>
 </div>
 
 </div>
 
-<!-- HERO -->
-<section class="hero" id="overview">
+</div>
 
-<h2>Offshore Control Platform</h2>
-
-<p>
-Real-time monitoring and management platform for offshore drilling,
-production systems and industrial energy operations.
-</p>
-
-</section>
-
-<!-- SYSTEMS -->
-<h2 class="section-title" id="systems">Live Systems</h2>
-
+<!-- KPI GRID -->
 <div class="grid">
 
 <div class="card">
 <div class="live"></div>
-<h3>Pressure Network</h3>
-<p id="pressureText">Stable</p>
-<div class="meter"><div class="fill"></div></div>
+<h3>Platform Uptime</h3>
+<div class="kpi">98.7%</div>
+<div class="gauge"><div class="gauge-fill"></div></div>
 </div>
 
 <div class="card">
 <div class="live"></div>
-<h3>Cooling Systems</h3>
-<p>Operational</p>
-<div class="meter"><div class="fill"></div></div>
+<h3>Active Wells</h3>
+<div class="kpi">24</div>
+<div class="gauge"><div class="gauge-fill"></div></div>
 </div>
 
 <div class="card">
 <div class="live"></div>
-<h3>Security Grid</h3>
-<p>Secure</p>
-<div class="meter"><div class="fill"></div></div>
+<h3>Production Output</h3>
+<div class="kpi">14.2k</div>
+<div class="gauge"><div class="gauge-fill"></div></div>
 </div>
 
 <div class="card">
 <div class="live"></div>
-<h3>Production Flow</h3>
-<p>Online</p>
-<div class="meter"><div class="fill"></div></div>
+<h3>Safety Rating</h3>
+<div class="kpi">99%</div>
+<div class="gauge"><div class="gauge-fill"></div></div>
 </div>
+
+</div>
+
+<!-- CHART -->
+<h2 class="section-title">Production Analytics</h2>
+
+<div class="chart-container">
+
+<canvas id="productionChart"></canvas>
 
 </div>
 
 <!-- TERMINAL -->
-<h2 class="section-title" id="terminal">Operations Terminal</h2>
+<h2 class="section-title">Operations Terminal</h2>
 
-<div class="terminal" id="terminalBox">
+<div class="terminal" id="terminal">
 
 <p>> Initializing offshore systems...</p>
-<p>> Connecting rig sensors...</p>
-<p>> Satellite uplink active...</p>
-<p>> Platform operational.</p>
 
 </div>
 
-<!-- ANALYTICS -->
-<h2 class="section-title" id="analytics">Production Analytics</h2>
+<!-- NOTIFICATIONS -->
+<h2 class="section-title">System Alerts</h2>
 
-<div class="card">
+<div class="notifications">
 
-<h3>Energy Output</h3>
-
-<div class="analytics">
-
-<div class="bar"></div>
-<div class="bar"></div>
-<div class="bar"></div>
-<div class="bar"></div>
-<div class="bar"></div>
-
+<div class="notification">
+⚠ Offshore inspection scheduled in 2 hours.
 </div>
 
+<div class="notification">
+⚠ Backup generators currently active.
 </div>
 
-<!-- PROJECTS -->
-<h2 class="section-title" id="projects">Active Projects</h2>
-
-<div class="projects">
-
-<div class="project">
-<img src="https://picsum.photos/800/500?oil-rig">
-<div class="project-info">
-<h3>North Sea Alpha</h3>
-<p>Deepwater drilling and offshore production.</p>
+<div class="notification">
+⚠ Weather conditions stable across all rigs.
 </div>
-</div>
-
-<div class="project">
-<img src="https://picsum.photos/800/500?gas-system">
-<div class="project-info">
-<h3>Gas Compression Unit</h3>
-<p>Industrial gas infrastructure expansion.</p>
-</div>
-</div>
-
-<div class="project">
-<img src="https://picsum.photos/800/500?offshore-security">
-<div class="project-info">
-<h3>Security Network Upgrade</h3>
-<p>SCADA and offshore monitoring integration.</p>
-</div>
-</div>
-
-</div>
-
-<!-- WEATHER -->
-<h2 class="section-title" id="weather">Offshore Weather</h2>
-
-<div class="card weather">
-
-<div>
-<h3>North Sea Conditions</h3>
-<p>Wave Height: 2.4m</p>
-<p>Wind Speed: 18 knots</p>
-<p>Visibility: Clear</p>
-</div>
-
-<div class="weather-temp">
-12°
-</div>
-
-</div>
-
-<!-- MAP -->
-<h2 class="section-title" id="map">Operations Map</h2>
-
-<div class="map">
-
-<iframe
-src="https://maps.google.com/maps?q=North%20Sea&t=&z=4&ie=UTF8&iwloc=&output=embed">
-</iframe>
-
-</div>
-
-<!-- CONTACT -->
-<h2 class="section-title" id="contact">Operations Contact</h2>
-
-<div class="contact">
-
-<input type="text" placeholder="Full Name">
-
-<input type="email" placeholder="Email Address">
-
-<textarea rows="6" placeholder="Operations Message"></textarea>
-
-<button onclick="sendMessage()">Send Message</button>
 
 </div>
 
 <footer>
-© 2026 NorthSea Energy Offshore Platform
+© 2026 NorthSea Enterprise Control Center
 </footer>
 
 </div>
 
 <script>
 
-/* DARK/LIGHT MODE */
-function toggleMode(){
-document.body.classList.toggle("light-mode");
-}
+/* LOADER */
+window.onload = () => {
+setTimeout(() => {
+document.getElementById("loader").style.display = "none";
+}, 2500);
+};
 
-/* REFRESH */
-function refreshData(){
-alert("System data refreshed.");
-}
+/* SIDEBAR TOGGLE */
+document.getElementById("menuBtn").onclick = () => {
 
-/* CONTACT */
-function sendMessage(){
-alert("Operations team notified.");
-}
+document.getElementById("sidebar")
+.classList.toggle("collapsed");
+
+document.getElementById("main")
+.classList.toggle("expanded");
+
+};
+
+/* CLOCK */
+setInterval(() => {
+
+document.getElementById("clock").innerText =
+new Date().toUTCString();
+
+},1000);
 
 /* TERMINAL LOGS */
-const terminal = document.getElementById("terminalBox");
+const terminal = document.getElementById("terminal");
 
 const logs = [
 
 "> Pressure stable on Alpha Platform",
-"> Monitoring offshore production",
-"> Cooling systems normal",
+"> Cooling systems operational",
+"> Monitoring offshore flow",
+"> Security network online",
 "> Satellite uplink connected",
-"> Offshore security active",
-"> Wave conditions stable",
-"> Backup generators operational"
+"> Backup generators active",
+"> Weather conditions stable"
 
 ];
 
@@ -618,7 +480,54 @@ if(index >= logs.length){
 index = 0;
 }
 
-}, 2500);
+},2500);
+
+/* RANDOM ALERT */
+setTimeout(() => {
+
+alert("Warning: Pressure fluctuation detected on Rig Alpha.");
+
+},15000);
+
+/* CHART */
+const ctx = document.getElementById('productionChart');
+
+new Chart(ctx, {
+
+type:'line',
+
+data:{
+labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+datasets:[{
+label:'Production Output',
+data:[12,19,14,17,22,18,25],
+borderColor:'#00d9ff',
+backgroundColor:'rgba(0,217,255,0.2)',
+fill:true,
+tension:0.4
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{
+labels:{
+color:'white'
+}
+}
+},
+scales:{
+x:{
+ticks:{color:'white'}
+},
+y:{
+ticks:{color:'white'}
+}
+}
+}
+
+});
 
 </script>
 
