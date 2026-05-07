@@ -5,42 +5,63 @@
 <title>NorthSea Energy Services</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #061625;
-    color: white;
+    font-family: "Inter", Arial, sans-serif;
+    background: #050b14;
+    color: #e6e6e6;
+}
+
+/* TOP BAR */
+.topbar {
+    background: #04070d;
+    padding: 10px 20px;
+    font-size: 13px;
+    text-align: center;
+    color: #aaa;
 }
 
 /* HEADER */
 header {
-    background: #050f1a;
-    padding: 20px;
+    padding: 25px 20px;
     text-align: center;
-    border-bottom: 2px solid #f4b400;
+    border-bottom: 1px solid #1a2a3a;
 }
 
 header h1 {
     margin: 0;
+    font-size: 26px;
+    letter-spacing: 2px;
     color: #f4b400;
+}
+
+header p {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: #aaa;
 }
 
 /* NAV */
 nav {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    background: #071d33;
-    padding: 12px;
+    gap: 25px;
+    padding: 15px;
+    background: #07121f;
     position: sticky;
     top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #1a2a3a;
 }
 
 nav a {
-    color: white;
+    color: #e6e6e6;
     text-decoration: none;
-    font-weight: bold;
+    font-size: 14px;
+    letter-spacing: 1px;
 }
 
 nav a:hover {
@@ -49,62 +70,77 @@ nav a:hover {
 
 /* HERO */
 .hero {
-    background: url('https://images.unsplash.com/photo-1581092160607-4f4c1f1c6b0c') center/cover;
-    padding: 120px 20px;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    url('https://images.unsplash.com/photo-1581092160607-4f4c1f1c6b0c') center/cover;
+    padding: 140px 20px;
     text-align: center;
 }
 
-.hero-box {
-    background: rgba(0,0,0,0.65);
-    display: inline-block;
-    padding: 40px;
-    border-radius: 10px;
+.hero h2 {
+    font-size: 38px;
+    margin-bottom: 10px;
 }
 
-/* SECTIONS */
+.hero p {
+    color: #bbb;
+}
+
+/* SECTION */
 section {
-    max-width: 1000px;
+    max-width: 1050px;
     margin: auto;
-    padding: 60px 20px;
+    padding: 70px 20px;
 }
 
+h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #f4b400;
+    letter-spacing: 1px;
+}
+
+/* CARDS */
 .card {
-    background: #10263d;
+    background: #0b1a2b;
     padding: 20px;
-    margin: 10px 0;
-    border-left: 4px solid #f4b400;
-    border-radius: 6px;
+    border: 1px solid #1a2a3a;
+    border-radius: 8px;
+    margin-bottom: 15px;
 }
 
-/* PROJECT GRID */
+/* GRID */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 15px;
 }
 
 .project {
-    background: #0d2a44;
-    padding: 15px;
+    background: #0b1a2b;
+    padding: 18px;
+    border: 1px solid #1a2a3a;
     border-radius: 8px;
 }
 
-/* CONTACT FORM */
+/* CONTACT */
 input, textarea {
     width: 100%;
-    padding: 10px;
-    margin-top: 8px;
+    padding: 12px;
+    margin-top: 10px;
     margin-bottom: 15px;
-    border: none;
-    border-radius: 5px;
+    background: #0b1a2b;
+    border: 1px solid #1a2a3a;
+    color: white;
+    border-radius: 6px;
 }
 
 button {
     background: #f4b400;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 20px;
     font-weight: bold;
     cursor: pointer;
+    border-radius: 6px;
 }
 
 button:hover {
@@ -114,73 +150,79 @@ button:hover {
 /* FOOTER */
 footer {
     text-align: center;
-    padding: 20px;
-    background: #050f1a;
-    font-size: 14px;
+    padding: 25px;
+    font-size: 12px;
+    color: #777;
+    border-top: 1px solid #1a2a3a;
 }
 </style>
 </head>
 
 <body>
 
+<div class="topbar">
+Offshore Engineering & Energy Services | North Sea Operations
+</div>
+
 <header>
-<h1>NorthSea Energy Services</h1>
+<h1>NORTHSEA ENERGY SERVICES</h1>
 <p>Offshore Oil & Gas Engineering Solutions</p>
 </header>
 
 <nav>
-<a href="#about">About</a>
-<a href="#services">Services</a>
-<a href="#projects">Projects</a>
-<a href="#contact">Contact</a>
+<a href="#about">ABOUT</a>
+<a href="#services">SERVICES</a>
+<a href="#projects">PROJECTS</a>
+<a href="#contact">CONTACT</a>
 </nav>
 
 <div class="hero">
-<div class="hero-box">
-<h2>Engineering Strength. Delivering Energy.</h2>
-<p>Offshore • Oil & Gas • Industrial Support</p>
-</div>
+<h2>Engineering Strength. Offshore Reliability.</h2>
+<p>Delivering safe, efficient energy infrastructure solutions</p>
 </div>
 
 <section id="about">
-<h2>About Us</h2>
+<h2>ABOUT</h2>
 <div class="card">
-NorthSea Energy Services provides offshore engineering, maintenance,
-and fabrication support for oil and gas platforms and industrial operations.
+NorthSea Energy Services is an offshore engineering contractor providing
+maintenance, fabrication, and operational support for oil and gas platforms.
+We operate with strict safety, compliance, and industrial standards.
 </div>
 </section>
 
 <section id="services">
-<h2>Services</h2>
-<div class="card">Offshore Platform Maintenance</div>
-<div class="card">Oil & Gas Engineering Support</div>
-<div class="card">Welding & Fabrication</div>
-<div class="card">Structural Inspection & Compliance</div>
+<h2>SERVICES</h2>
+
+<div class="card">Offshore Platform Maintenance & Repairs</div>
+<div class="card">Oil & Gas Structural Engineering Support</div>
+<div class="card">Welding, Fabrication & Installation</div>
+<div class="card">Inspection, Compliance & Safety Audits</div>
+
 </section>
 
 <section id="projects">
-<h2>Projects</h2>
+<h2>PROJECTS</h2>
 
 <div class="grid">
-<div class="project">North Sea Platform Upgrade</div>
-<div class="project">Offshore Structural Repair Project</div>
-<div class="project">Pipeline Maintenance Support</div>
-<div class="project">Industrial Fabrication Work</div>
+<div class="project">North Sea Platform Integrity Upgrade</div>
+<div class="project">Offshore Structural Reinforcement Program</div>
+<div class="project">Pipeline Maintenance Support Operations</div>
+<div class="project">Industrial Fabrication Contract Work</div>
 </div>
 
 </section>
 
 <section id="contact">
-<h2>Contact</h2>
+<h2>CONTACT</h2>
 
 <div class="card">
 <p>Email: northseaenergyservices@gmail.com</p>
 
 <form action="https://formsubmit.co/northseaenergyservices@gmail.com" method="POST">
-<input type="text" name="name" placeholder="Your Name" required>
-<input type="email" name="email" placeholder="Your Email" required>
-<textarea name="message" placeholder="Your Message" rows="5" required></textarea>
-<button type="submit">Send Message</button>
+<input type="text" name="name" placeholder="Full Name" required>
+<input type="email" name="email" placeholder="Email Address" required>
+<textarea name="message" placeholder="Message" rows="5" required></textarea>
+<button type="submit">Submit Inquiry</button>
 </form>
 
 </div>
@@ -188,7 +230,7 @@ and fabrication support for oil and gas platforms and industrial operations.
 </section>
 
 <footer>
-© 2026 NorthSea Energy Services | Offshore Engineering Division
+© 2026 NorthSea Energy Services. All Rights Reserved.
 </footer>
 
 </body>
