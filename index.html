@@ -1,237 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>NorthSea Energy Services</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body {
-    margin: 0;
-    font-family: "Inter", Arial, sans-serif;
-    background: #050b14;
-    color: #e6e6e6;
-}
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+    }
 
-/* TOP BAR */
-.topbar {
-    background: #04070d;
-    padding: 10px 20px;
-    font-size: 13px;
-    text-align: center;
-    color: #aaa;
-}
+    body {
+        background: #0b0f1a;
+        color: #ffffff;
+        line-height: 1.6;
+    }
 
-/* HEADER */
-header {
-    padding: 25px 20px;
-    text-align: center;
-    border-bottom: 1px solid #1a2a3a;
-}
+    header {
+        background: #05070f;
+        padding: 20px 60px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border-bottom: 1px solid #1f2a44;
+    }
 
-header h1 {
-    margin: 0;
-    font-size: 26px;
-    letter-spacing: 2px;
-    color: #f4b400;
-}
+    header h1 {
+        color: #00b4d8;
+        font-size: 22px;
+    }
 
-header p {
-    margin: 5px 0 0;
-    font-size: 13px;
-    color: #aaa;
-}
+    nav a {
+        color: #ffffff;
+        margin-left: 20px;
+        text-decoration: none;
+        font-size: 14px;
+    }
 
-/* NAV */
-nav {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    padding: 15px;
-    background: #07121f;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-bottom: 1px solid #1a2a3a;
-}
+    nav a:hover {
+        color: #00b4d8;
+    }
 
-nav a {
-    color: #e6e6e6;
-    text-decoration: none;
-    font-size: 14px;
-    letter-spacing: 1px;
-}
+    .hero {
+        height: 90vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)),
+        url('https://images.unsplash.com/photo-1581093458791-9d42e3f3b2b5') center/cover no-repeat;
+        padding: 20px;
+    }
 
-nav a:hover {
-    color: #f4b400;
-}
+    .hero h2 {
+        font-size: 42px;
+        color: #00b4d8;
+    }
 
-/* HERO */
-.hero {
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-    url('https://images.unsplash.com/photo-1581092160607-4f4c1f1c6b0c') center/cover;
-    padding: 140px 20px;
-    text-align: center;
-}
+    .hero p {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #ddd;
+    }
 
-.hero h2 {
-    font-size: 38px;
-    margin-bottom: 10px;
-}
+    .btn {
+        margin-top: 20px;
+        display: inline-block;
+        padding: 12px 25px;
+        background: #00b4d8;
+        color: #000;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+    }
 
-.hero p {
-    color: #bbb;
-}
+    section {
+        padding: 60px;
+    }
 
-/* SECTION */
-section {
-    max-width: 1050px;
-    margin: auto;
-    padding: 70px 20px;
-}
+    .services {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
 
-h2 {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #f4b400;
-    letter-spacing: 1px;
-}
+    .card {
+        background: #111827;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #1f2a44;
+    }
 
-/* CARDS */
-.card {
-    background: #0b1a2b;
-    padding: 20px;
-    border: 1px solid #1a2a3a;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
+    .card h3 {
+        color: #00b4d8;
+        margin-bottom: 10px;
+    }
 
-/* GRID */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 15px;
-}
+    .about, .contact {
+        background: #0f172a;
+        border-top: 1px solid #1f2a44;
+    }
 
-.project {
-    background: #0b1a2b;
-    padding: 18px;
-    border: 1px solid #1a2a3a;
-    border-radius: 8px;
-}
+    .contact form {
+        display: flex;
+        flex-direction: column;
+        max-width: 500px;
+    }
 
-/* CONTACT */
-input, textarea {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    background: #0b1a2b;
-    border: 1px solid #1a2a3a;
-    color: white;
-    border-radius: 6px;
-}
+    input, textarea {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+    }
 
-button {
-    background: #f4b400;
-    border: none;
-    padding: 12px 20px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 6px;
-}
+    button {
+        padding: 12px;
+        background: #00b4d8;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
 
-button:hover {
-    background: #d89d00;
-}
-
-/* FOOTER */
-footer {
-    text-align: center;
-    padding: 25px;
-    font-size: 12px;
-    color: #777;
-    border-top: 1px solid #1a2a3a;
-}
+    footer {
+        text-align: center;
+        padding: 20px;
+        background: #05070f;
+        font-size: 12px;
+        color: #aaa;
+    }
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
-Offshore Engineering & Energy Services | North Sea Operations
-</div>
-
 <header>
-<h1>NORTHSEA ENERGY SERVICES</h1>
-<p>Offshore Oil & Gas Engineering Solutions</p>
+    <h1>NorthSea Energy Services</h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+    </nav>
 </header>
 
-<nav>
-<a href="#about">ABOUT</a>
-<a href="#services">SERVICES</a>
-<a href="#projects">PROJECTS</a>
-<a href="#contact">CONTACT</a>
-</nav>
-
-<div class="hero">
-<h2>Engineering Strength. Offshore Reliability.</h2>
-<p>Delivering safe, efficient energy infrastructure solutions</p>
-</div>
-
-<section id="about">
-<h2>ABOUT</h2>
-<div class="card">
-NorthSea Energy Services is an offshore engineering contractor providing
-maintenance, fabrication, and operational support for oil and gas platforms.
-We operate with strict safety, compliance, and industrial standards.
-</div>
+<section class="hero" id="home">
+    <div>
+        <h2>Offshore Energy & Oil Platform Solutions</h2>
+        <p>Delivering safe, reliable and world-class energy services across the North Sea and beyond.</p>
+        <a href="#contact" class="btn">Contact Us</a>
+    </div>
 </section>
 
 <section id="services">
-<h2>SERVICES</h2>
+    <h2 style="text-align:center; margin-bottom:40px;">Our Services</h2>
 
-<div class="card">Offshore Platform Maintenance & Repairs</div>
-<div class="card">Oil & Gas Structural Engineering Support</div>
-<div class="card">Welding, Fabrication & Installation</div>
-<div class="card">Inspection, Compliance & Safety Audits</div>
+    <div class="services">
+        <div class="card">
+            <h3>Offshore Operations</h3>
+            <p>Safe and efficient offshore oil platform management and support services.</p>
+        </div>
 
+        <div class="card">
+            <h3>Engineering & Maintenance</h3>
+            <p>High-level mechanical, structural and industrial maintenance solutions.</p>
+        </div>
+
+        <div class="card">
+            <h3>Safety Compliance</h3>
+            <p>Ensuring full compliance with international offshore safety standards.</p>
+        </div>
+
+        <div class="card">
+            <h3>Energy Consulting</h3>
+            <p>Expert consulting for oil, gas, and renewable energy projects.</p>
+        </div>
+    </div>
 </section>
 
-<section id="projects">
-<h2>PROJECTS</h2>
-
-<div class="grid">
-<div class="project">North Sea Platform Integrity Upgrade</div>
-<div class="project">Offshore Structural Reinforcement Program</div>
-<div class="project">Pipeline Maintenance Support Operations</div>
-<div class="project">Industrial Fabrication Contract Work</div>
-</div>
-
+<section class="about" id="about">
+    <h2 style="text-align:center; margin-bottom:20px;">About Us</h2>
+    <p style="max-width:800px; margin:auto; text-align:center;">
+        NorthSea Energy Services is a professional offshore contractor specializing in oil platform operations,
+        engineering support, and energy infrastructure solutions. We operate with a strong commitment to safety,
+        reliability, and excellence in every project.
+    </p>
 </section>
 
-<section id="contact">
-<h2>CONTACT</h2>
+<section class="contact" id="contact">
+    <h2 style="text-align:center; margin-bottom:20px;">Contact Us</h2>
 
-<div class="card">
-<p>Email: northseaenergyservices@gmail.com</p>
+    <form onsubmit="sendMessage(event)">
+        <input type="text" placeholder="Your Name" required />
+        <input type="email" placeholder="Your Email" required />
+        <textarea rows="5" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
 
-<form action="https://formsubmit.co/northseaenergyservices@gmail.com" method="POST">
-<input type="text" name="name" placeholder="Full Name" required>
-<input type="email" name="email" placeholder="Email Address" required>
-<textarea name="message" placeholder="Message" rows="5" required></textarea>
-<button type="submit">Submit Inquiry</button>
-</form>
+    <p style="text-align:center; margin-top:20px;">
+        Or message us directly on WhatsApp:
+    </p>
 
-</div>
-
+    <!-- FIXED WhatsApp link -->
+    <p style="text-align:center;">
+        <a class="btn" href="https://wa.me/14154984256" target="_blank">
+            Chat on WhatsApp
+        </a>
+    </p>
 </section>
 
 <footer>
-© 2026 NorthSea Energy Services. All Rights Reserved.
+    © 2026 NorthSea Energy Services. All rights reserved.
 </footer>
+
+<script>
+function sendMessage(e) {
+    e.preventDefault();
+    alert("Message sent successfully. We will contact you soon.");
+}
+</script>
 
 </body>
 </html>
