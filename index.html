@@ -9,17 +9,30 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #071726;
+    background: #061625;
     color: white;
+}
+
+/* HEADER */
+header {
+    background: #050f1a;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 2px solid #f4b400;
+}
+
+header h1 {
+    margin: 0;
+    color: #f4b400;
 }
 
 /* NAV */
 nav {
     display: flex;
     justify-content: center;
-    gap: 20px;
-    background: #050f1a;
-    padding: 15px;
+    gap: 15px;
+    background: #071d33;
+    padding: 12px;
     position: sticky;
     top: 0;
 }
@@ -42,16 +55,10 @@ nav a:hover {
 }
 
 .hero-box {
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.65);
     display: inline-block;
     padding: 40px;
     border-radius: 10px;
-}
-
-.hero h1 {
-    margin: 0;
-    font-size: 42px;
-    color: #f4b400;
 }
 
 /* SECTIONS */
@@ -69,6 +76,41 @@ section {
     border-radius: 6px;
 }
 
+/* PROJECT GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.project {
+    background: #0d2a44;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* CONTACT FORM */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    background: #f4b400;
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #d89d00;
+}
+
 /* FOOTER */
 footer {
     text-align: center;
@@ -81,26 +123,30 @@ footer {
 
 <body>
 
+<header>
+<h1>NorthSea Energy Services</h1>
+<p>Offshore Oil & Gas Engineering Solutions</p>
+</header>
+
 <nav>
 <a href="#about">About</a>
 <a href="#services">Services</a>
 <a href="#projects">Projects</a>
-<a href="#safety">Safety</a>
 <a href="#contact">Contact</a>
 </nav>
 
 <div class="hero">
 <div class="hero-box">
-<h1>NorthSea Energy Services</h1>
-<p>Offshore Oil & Gas Engineering Solutions</p>
+<h2>Engineering Strength. Delivering Energy.</h2>
+<p>Offshore • Oil & Gas • Industrial Support</p>
 </div>
 </div>
 
 <section id="about">
 <h2>About Us</h2>
 <div class="card">
-NorthSea Energy Services provides offshore engineering support, maintenance,
-and fabrication services for oil and gas operations across industrial environments.
+NorthSea Energy Services provides offshore engineering, maintenance,
+and fabrication support for oil and gas platforms and industrial operations.
 </div>
 </section>
 
@@ -108,33 +154,37 @@ and fabrication services for oil and gas operations across industrial environmen
 <h2>Services</h2>
 <div class="card">Offshore Platform Maintenance</div>
 <div class="card">Oil & Gas Engineering Support</div>
-<div class="card">Welding & Structural Fabrication</div>
-<div class="card">Inspection & Compliance Services</div>
+<div class="card">Welding & Fabrication</div>
+<div class="card">Structural Inspection & Compliance</div>
 </section>
 
 <section id="projects">
 <h2>Projects</h2>
-<div class="card">
-North Sea Offshore Platform Maintenance – Structural reinforcement and systems upgrade.
-</div>
-<div class="card">
-Industrial Fabrication Project – Heavy steel framework for offshore installation.
-</div>
-</section>
 
-<section id="safety">
-<h2>Safety Commitment</h2>
-<div class="card">
-We follow strict offshore safety regulations, risk management procedures,
-and compliance standards to ensure safe operations at all times.
+<div class="grid">
+<div class="project">North Sea Platform Upgrade</div>
+<div class="project">Offshore Structural Repair Project</div>
+<div class="project">Pipeline Maintenance Support</div>
+<div class="project">Industrial Fabrication Work</div>
 </div>
+
 </section>
 
 <section id="contact">
 <h2>Contact</h2>
+
 <div class="card">
-Email: northseaenergyservices@gmail.com
+<p>Email: northseaenergyservices@gmail.com</p>
+
+<form action="https://formsubmit.co/northseaenergyservices@gmail.com" method="POST">
+<input type="text" name="name" placeholder="Your Name" required>
+<input type="email" name="email" placeholder="Your Email" required>
+<textarea name="message" placeholder="Your Message" rows="5" required></textarea>
+<button type="submit">Send Message</button>
+</form>
+
 </div>
+
 </section>
 
 <footer>
