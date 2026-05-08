@@ -2,200 +2,246 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SCADA Control System - Clean Build</title>
+<title>SCADA v2 - 3D Offshore Control Room</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
     margin:0;
+    overflow:hidden;
     font-family:Arial;
-    background:#050814;
-    color:white;
+    background:black;
 }
 
-/* LOGIN SCREEN */
-#login{
+/* HUD */
+#hud{
     position:fixed;
-    inset:0;
-    background:#000;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-}
-
-input{
-    padding:10px;
-    margin:5px;
-    width:220px;
+    top:10px;
+    left:10px;
+    width:280px;
+    background:rgba(0,0,0,0.7);
+    color:white;
+    padding:12px;
+    border:1px solid #00d9ff;
+    border-radius:10px;
+    z-index:10;
 }
 
 button{
-    padding:10px;
-    width:220px;
+    width:100%;
+    margin-top:6px;
+    padding:8px;
     background:#00d9ff;
     border:none;
     cursor:pointer;
-}
-
-/* TOP BAR */
-.header{
-    display:flex;
-    justify-content:space-between;
-    padding:15px;
-    background:#0b1220;
-    border-bottom:1px solid #1f2a44;
-}
-
-/* GRID */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:15px;
-    padding:15px;
-}
-
-.card{
-    background:#0f172a;
-    padding:15px;
-    border-radius:10px;
-    border:1px solid #1f2a44;
+    font-weight:bold;
 }
 
 /* LOG */
 #log{
-    position:fixed;
-    bottom:10px;
-    left:10px;
-    width:350px;
-    height:140px;
+    margin-top:10px;
+    height:120px;
     overflow:auto;
-    background:black;
-    color:#00ff88;
     font-size:12px;
-    padding:10px;
-    border:1px solid #1f2a44;
+    color:#00ff88;
 }
 
 /* ALERT */
 .alert{
     position:fixed;
-    right:10px;
-    top:70px;
+    right:20px;
+    top:20px;
     padding:10px;
     border-radius:8px;
     color:white;
+    z-index:999;
 }
 
 .warning{background:orange;}
 .critical{background:red;}
-.info{background:#1e3a8a;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-<h2>SCADA LOGIN</h2>
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-<button onclick="login()">ENTER SYSTEM</button>
-</div>
+<!-- HUD -->
+<div id="hud">
 
-<!-- MAIN SYSTEM -->
-<div id="app" style="display:none;">
+<h3>SCADA v2 CONTROL ROOM</h3>
 
-<div class="header">
-<div>OFFSHORE SCADA CONTROL</div>
-<div id="status">SYSTEM: STABLE</div>
-</div>
+<div>Selected: <span id="selected">None</span></div>
 
-<div class="grid">
-
-<div class="card">
-<h3>Rig Alpha</h3>
-<p id="a">Pressure: 70 | Temp: 55</p>
-<button onclick="select('Alpha')">Select</button>
-</div>
-
-<div class="card">
-<h3>Rig Beta</h3>
-<p id="b">Pressure: 68 | Temp: 52</p>
-<button onclick="select('Beta')">Select</button>
-</div>
-
-<div class="card">
-<h3>Rig Gamma</h3>
-<p id="c">Pressure: 72 | Temp: 60</p>
-<button onclick="select('Gamma')">Select</button>
-</div>
-
-</div>
+<button onclick="toggleSim()">Start/Stop Simulation</button>
+<button onclick="injectFault()">Inject Fault</button>
 
 <div id="log"></div>
 
 </div>
 
+<!-- THREE JS -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
 <script>
 
-/* =====================
-   LOGIN SYSTEM
-===================== */
+/* =========================
+   SCENE SETUP
+========================= */
 
-function login(){
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x001018);
 
-let u=document.getElementById("user").value;
-let p=document.getElementById("pass").value;
+const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+camera.position.set(0,8,18);
 
-/* SIMPLE DEMO LOGIN */
-if(u==="admin" && p==="1234"){
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
 
-document.getElementById("login").style.display="none";
-document.getElementById("app").style.display="block";
+/* LIGHT */
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
 
-log("ACCESS GRANTED");
+const light=new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
 
-startSystem();
+/* =========================
+   OCEAN
+========================= */
 
-}else{
+const ocean=new THREE.Mesh(
+new THREE.PlaneGeometry(200,200),
+new THREE.MeshStandardMaterial({color:0x003344})
+);
 
-alert("ACCESS DENIED");
+ocean.rotation.x=-Math.PI/2;
+scene.add(ocean);
 
-}
+/* =========================
+   RIGS
+========================= */
 
-}
+const rigs=[];
 
-/* =====================
-   SYSTEM STATE
-===================== */
+function createRig(name,x,z,color){
 
-let rigs={
-Alpha:{p:70,t:55},
-Beta:{p:68,t:52},
-Gamma:{p:72,t:60}
+const g=new THREE.Group();
+
+const base=new THREE.Mesh(
+new THREE.BoxGeometry(2,1,2),
+new THREE.MeshStandardMaterial({color:0x333333})
+);
+
+const tower=new THREE.Mesh(
+new THREE.CylinderGeometry(0.5,0.5,5),
+new THREE.MeshStandardMaterial({color})
+);
+
+tower.position.y=3;
+
+g.add(base);
+g.add(tower);
+
+g.position.set(x,0,z);
+
+g.userData={
+name,
+pressure:70+Math.random()*10,
+temp:50+Math.random()*10
 };
 
-let selected=null;
+scene.add(g);
+rigs.push(g);
 
-/* =====================
-   SELECT RIG
-===================== */
-
-function select(r){
-selected=r;
-log("Selected rig: "+r);
 }
 
-/* =====================
-   LOG SYSTEM
-===================== */
+createRig("Alpha",-10,0,0x00d9ff);
+createRig("Beta",10,0,0xffaa00);
+createRig("Gamma",0,-15,0xff0000);
+
+/* =========================
+   CLICK SELECT
+========================= */
+
+const ray=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+
+window.addEventListener("click",(e)=>{
+
+mouse.x=(e.clientX/innerWidth)*2-1;
+mouse.y=-(e.clientY/innerHeight)*2+1;
+
+ray.setFromCamera(mouse,camera);
+
+const hits=ray.intersectObjects(scene.children,true);
+
+if(hits.length){
+
+let obj=hits[0].object.parent;
+
+if(obj && obj.userData.name){
+
+selectRig(obj.userData.name);
+
+}
+
+}
+
+});
+
+/* =========================
+   STATE
+========================= */
+
+let running=true;
+let selectedRig=null;
+
+/* =========================
+   UI FUNCTIONS
+========================= */
+
+function selectRig(name){
+selectedRig=name;
+document.getElementById("selected").innerText=name;
+log("Rig selected: "+name);
+}
+
+function toggleSim(){
+running=!running;
+log("Simulation: "+running);
+}
+
+function injectFault(){
+log("FAULT injected");
+alertBox("critical","System Fault Injected");
+}
+
+/* =========================
+   ALERT SYSTEM
+========================= */
+
+function alertBox(type,msg){
+
+const a=document.createElement("div");
+a.className="alert "+type;
+a.innerText=msg;
+
+document.body.appendChild(a);
+
+setTimeout(()=>a.remove(),3000);
+
+log("ALERT: "+msg);
+
+}
+
+/* =========================
+   LOG
+========================= */
 
 function log(msg){
 
-let d=document.getElementById("log");
+const d=document.getElementById("log");
 
-let p=document.createElement("div");
+const p=document.createElement("div");
 p.innerText=msg;
 
 d.appendChild(p);
@@ -208,78 +254,62 @@ d.scrollTop=d.scrollHeight;
 
 }
 
-/* =====================
-   ALERT SYSTEM
-===================== */
-
-function alertBox(type,msg){
-
-let a=document.createElement("div");
-a.className="alert "+type;
-a.innerText=msg;
-
-document.body.appendChild(a);
-
-setTimeout(()=>a.remove(),3000);
-
-log("ALERT: "+msg);
-
-}
-
-/* =====================
-   UPDATE SYSTEM
-===================== */
+/* =========================
+   UPDATE ENGINE
+========================= */
 
 function update(){
 
-rigs.Alpha.p+=(Math.random()-0.5)*2;
-rigs.Alpha.t+=(Math.random()-0.5)*1.5;
+rigs.forEach(r=>{
 
-rigs.Beta.p+=(Math.random()-0.5)*2;
-rigs.Beta.t+=(Math.random()-0.5)*1.5;
+if(running){
 
-rigs.Gamma.p+=(Math.random()-0.5)*2;
-rigs.Gamma.t+=(Math.random()-0.5)*1.5;
-
-/* LIMITS */
-for(let r in rigs){
-
-rigs[r].p=Math.max(50,Math.min(90,rigs[r].p));
-rigs[r].t=Math.max(40,Math.min(75,rigs[r].t));
-
-if(rigs[r].p>85){
-alertBox("warning",r+" HIGH PRESSURE");
-}
-
-if(rigs[r].t>72){
-alertBox("critical",r+" OVERHEAT");
-}
+r.userData.pressure+=(Math.random()-0.5)*1.5;
+r.userData.temp+=(Math.random()-0.5)*1.2;
 
 }
 
-/* UI */
-document.getElementById("a").innerText=
-`Pressure: ${rigs.Alpha.p.toFixed(1)} | Temp: ${rigs.Alpha.t.toFixed(1)}`;
+/* clamp */
+r.userData.pressure=Math.max(50,Math.min(90,r.userData.pressure));
+r.userData.temp=Math.max(40,Math.min(75,r.userData.temp));
 
-document.getElementById("b").innerText=
-`Pressure: ${rigs.Beta.p.toFixed(1)} | Temp: ${rigs.Beta.t.toFixed(1)}`;
+/* alarms */
+if(r.userData.pressure>85){
+alertBox("warning",r.userData.name+" HIGH PRESSURE");
+}
 
-document.getElementById("c").innerText=
-`Pressure: ${rigs.Gamma.p.toFixed(1)} | Temp: ${rigs.Gamma.t.toFixed(1)}`;
+if(r.userData.temp>72){
+alertBox("critical",r.userData.name+" OVERHEAT");
+}
+
+});
 
 }
 
-/* =====================
-   SYSTEM LOOP
-===================== */
+/* =========================
+   LOOP
+========================= */
 
-function startSystem(){
+function animate(){
 
-setInterval(update,1500);
+requestAnimationFrame(animate);
 
-log("SCADA SYSTEM ONLINE");
+update();
+
+renderer.render(scene,camera);
 
 }
+
+animate();
+
+/* RESIZE */
+window.addEventListener("resize",()=>{
+
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+
+});
 
 </script>
 
