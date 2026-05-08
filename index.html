@@ -3,73 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCADA Industrial Simulator</title>
+<title>Offshore SCADA Simulator v2</title>
 
 <style>
 body{
     margin:0;
     font-family:Arial;
-    background:#030814;
-    color:#fff;
+    background:#050814;
+    color:white;
 }
 
-/* TOP BAR */
+/* LOGIN */
+#loginScreen{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:9999;
+}
+
+input{
+    padding:10px;
+    margin:5px;
+    width:200px;
+}
+
+/* TOPBAR */
 .topbar{
-    height:50px;
-    background:#0b1220;
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    padding:0 15px;
+    padding:15px;
+    background:#0b1220;
     border-bottom:1px solid #1f2a44;
 }
 
-.status{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.dot{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    background:lime;
-    box-shadow:0 0 10px lime;
+a{
+    color:#00d9ff;
+    margin-left:10px;
+    cursor:pointer;
 }
 
 /* LAYOUT */
 .container{
     display:flex;
-    height:calc(100vh - 50px);
 }
 
 /* SIDEBAR */
 .sidebar{
-    width:260px;
+    width:220px;
     background:#07101d;
-    border-right:1px solid #1f2a44;
     padding:15px;
+    border-right:1px solid #1f2a44;
 }
 
 .unit{
-    background:#0f172a;
     padding:10px;
     margin-bottom:10px;
-    border-radius:8px;
-    cursor:pointer;
+    background:#0f172a;
     border:1px solid #1f2a44;
-}
-
-.unit:hover{
-    border-color:#00d9ff;
+    cursor:pointer;
 }
 
 /* MAIN */
 .main{
     flex:1;
     padding:15px;
-    overflow:auto;
 }
 
 /* GRID */
@@ -81,150 +82,131 @@ body{
 
 .card{
     background:#0f172a;
+    padding:15px;
     border:1px solid #1f2a44;
     border-radius:10px;
-    padding:15px;
-    position:relative;
-}
-
-.card h3{
-    color:#00d9ff;
-}
-
-.value{
-    font-size:30px;
-    margin-top:10px;
-}
-
-/* GAUGE */
-.bar{
-    height:10px;
-    background:#111;
-    border-radius:10px;
-    overflow:hidden;
-    margin-top:10px;
-}
-
-.fill{
-    height:100%;
-    background:#00d9ff;
-    width:60%;
-    transition:0.3s;
 }
 
 /* TERMINAL */
 .terminal{
-    margin-top:15px;
-    height:180px;
     background:black;
     color:#00ff88;
-    padding:10px;
-    font-family:monospace;
+    height:150px;
     overflow:auto;
-    border:1px solid #1f2a44;
+    padding:10px;
+    margin-top:15px;
+    font-family:monospace;
 }
 
-/* ALERTS */
+/* ALERT */
 .alert{
     position:fixed;
     right:20px;
     top:60px;
-    padding:12px;
+    padding:10px;
     border-radius:8px;
-    animation:slide 0.3s ease;
-    z-index:9999;
+    z-index:999;
 }
 
-.info{background:#1e3a8a;}
 .warning{background:orange;}
 .critical{background:red;}
-
-@keyframes slide{
-    from{transform:translateX(200px);opacity:0;}
-    to{transform:translateX(0);opacity:1;}
-}
-
-/* CONTROL BUTTONS */
-.controls{
-    margin-top:15px;
-}
+.info{background:#1e3a8a;}
 
 button{
     padding:10px;
-    margin-right:5px;
+    margin:5px;
     background:#00d9ff;
     border:none;
-    font-weight:bold;
     cursor:pointer;
-}
-
-button:active{
-    transform:scale(0.96);
 }
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
-<div class="status">
-<div class="dot"></div>
-SCADA SIMULATION ACTIVE
+<!-- LOGIN -->
+<div id="loginScreen">
+<h2>SCADA LOGIN</h2>
+<input id="user" placeholder="username">
+<input id="pass" type="password" placeholder="password">
+<button onclick="login()">Login</button>
 </div>
-<div id="clock"></div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+
+<div class="topbar">
+<div>Offshore SCADA v2</div>
+<div>
+<a onclick="show('dashboard')">Dashboard</a>
+<a onclick="show('inspection')">Inspection</a>
+<a onclick="show('admin')">Admin</a>
+</div>
 </div>
 
 <div class="container">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-
-<h3 style="color:#00d9ff;">Equipment Control</h3>
-
-<div class="unit" onclick="selectUnit('Rig Alpha')">Rig Alpha</div>
-<div class="unit" onclick="selectUnit('Pump Station')">Pump Station</div>
-<div class="unit" onclick="selectUnit('Cooling Unit')">Cooling Unit</div>
-<div class="unit" onclick="selectUnit('Generator')">Generator</div>
-
+<div class="unit" onclick="selectRig('Alpha')">Rig Alpha</div>
+<div class="unit" onclick="selectRig('Beta')">Rig Beta</div>
+<div class="unit" onclick="selectRig('Gamma')">Rig Gamma</div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<h3>Live Industrial Systems</h3>
+<div id="dashboard">
+
+<h3>SCADA Dashboard</h3>
 
 <div class="grid">
 
 <div class="card">
 <h3>Pressure</h3>
-<div class="value" id="pressure">70%</div>
-<div class="bar"><div class="fill" id="pFill"></div></div>
+<p id="pressure">--</p>
 </div>
 
 <div class="card">
 <h3>Temperature</h3>
-<div class="value" id="temp">55°C</div>
-<div class="bar"><div class="fill" id="tFill"></div></div>
+<p id="temp">--</p>
 </div>
 
 <div class="card">
-<h3>System Load</h3>
-<div class="value" id="load">Normal</div>
+<h3>Active Rig</h3>
+<p id="rig">Alpha</p>
 </div>
 
 </div>
 
-<!-- CONTROLS -->
-<div class="controls">
+<button onclick="pump()">Pump</button>
+<button onclick="cool()">Cooling</button>
+<button onclick="togglePower()">Power</button>
 
-<button onclick="ackAlarms()">Acknowledge Alarms</button>
-<button onclick="emergencyShutdown()">Emergency Shutdown</button>
+<div class="terminal" id="log"></div>
+
+</div>
+
+<!-- INSPECTION -->
+<div id="inspection" style="display:none">
+<h3>Inspection Module</h3>
+
+<label><input type="checkbox"> Pressure OK</label><br>
+<label><input type="checkbox"> Cooling OK</label><br>
+<label><input type="checkbox"> Generator OK</label><br>
+
+<button onclick="submitInspection()">Submit</button>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" style="display:none">
+<h3>Admin Panel</h3>
+
 <button onclick="resetSystem()">Reset System</button>
-
+<button onclick="emergencyShutdown()">Emergency Shutdown</button>
 </div>
 
-<!-- TERMINAL -->
-<div class="terminal" id="terminal"></div>
+</div>
 
 </div>
 
@@ -232,140 +214,118 @@ SCADA SIMULATION ACTIVE
 
 <script>
 
-/* SYSTEM STATE */
-let pressure = 70;
-let temp = 55;
-let systemRunning = true;
+/* LOGIN */
+function login(){
+let u=document.getElementById("user").value;
+let p=document.getElementById("pass").value;
 
-/* CLOCK */
-setInterval(()=>{
-document.getElementById("clock").innerText =
-new Date().toUTCString();
-},1000);
+if(u==="admin" && p==="1234"){
+document.getElementById("loginScreen").style.display="none";
+document.getElementById("app").style.display="block";
+}
+}
+
+/* STATE */
+let state={
+rig:"Alpha",
+pressure:70,
+temp:55,
+power:true
+};
+
+/* RIG SELECT */
+function selectRig(r){
+state.rig=r;
+log("Rig selected: "+r);
+}
+
+/* SYSTEM ACTIONS */
+function pump(){
+state.pressure+=10;
+log("Pump activated");
+update();
+}
+
+function cool(){
+state.temp-=5;
+log("Cooling activated");
+update();
+}
+
+function togglePower(){
+state.power=!state.power;
+log("Power toggled: "+state.power);
+}
+
+/* UPDATE SYSTEM */
+function update(){
+
+document.getElementById("pressure").innerText=state.pressure+"%";
+document.getElementById("temp").innerText=state.temp+"°C";
+document.getElementById("rig").innerText=state.rig;
+
+/* ALERTS */
+if(state.pressure>85){
+alertBox("warning","High Pressure");
+}
+
+if(state.temp>75){
+alertBox("critical","Overheat Risk");
+}
+
+}
 
 /* LOG */
-const terminal = document.getElementById("terminal");
-
 function log(msg){
-const p = document.createElement("p");
-p.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-terminal.appendChild(p);
-terminal.scrollTop = terminal.scrollHeight;
+let d=document.getElementById("log");
+let p=document.createElement("p");
+p.innerText=msg;
+d.appendChild(p);
+d.scrollTop=d.scrollHeight;
 }
 
-/* ALERT ENGINE */
-function alertSystem(type,msg){
-
-const a = document.createElement("div");
-a.className = `alert ${type}`;
-a.innerText = msg;
-
+/* ALERT */
+function alertBox(type,msg){
+let a=document.createElement("div");
+a.className="alert "+type;
+a.innerText=msg;
 document.body.appendChild(a);
-
-setTimeout(()=>a.remove(),4000);
-
-log(`${type.toUpperCase()}: ${msg}`);
+setTimeout(()=>a.remove(),3000);
+log("ALERT: "+msg);
 }
 
-/* EQUIPMENT CONTROL */
-function selectUnit(unit){
-
-log("Operator selected: " + unit);
-
-switch(unit){
-
-case "Rig Alpha":
-systemRunning = !systemRunning;
-alertSystem("warning","Rig Alpha drill toggled");
-break;
-
-case "Pump Station":
-pressure += 12;
-alertSystem("info","Pump Station increased pressure");
-break;
-
-case "Cooling Unit":
-temp -= 6;
-alertSystem("info","Cooling system engaged");
-break;
-
-case "Generator":
-systemRunning = true;
-alertSystem("info","Generator stabilized power");
-break;
-
+/* INSPECTION */
+function submitInspection(){
+alert("Inspection submitted");
+log("Inspection completed");
 }
 
-updateSystems();
-}
-
-/* SYSTEM UPDATE */
-function updateSystems(){
-
-pressure = Math.max(50,Math.min(100,pressure));
-temp = Math.max(35,Math.min(90,temp));
-
-document.getElementById("pressure").innerText = Math.floor(pressure)+"%";
-document.getElementById("temp").innerText = Math.floor(temp)+"°C";
-
-document.getElementById("pFill").style.width = pressure+"%";
-document.getElementById("tFill").style.width = temp+"%";
-
-/* INTERLOCKS */
-if(pressure > 85){
-alertSystem("critical","Pressure Critical - System Stress");
-}
-
-if(temp > 75){
-alertSystem("critical","Overheat Detected - Cooling Failure Risk");
-}
-
-if(pressure > 90 && temp > 80){
-alertSystem("critical","SYSTEM TRIP INITIATED");
-systemShutdown();
-}
-
-}
-
-/* AUTO DRIFT */
-setInterval(()=>{
-
-if(systemRunning){
-
-pressure += (Math.random()-0.5)*3;
-temp += (Math.random()-0.5)*2;
-
-updateSystems();
-
-}
-
-},2500);
-
-/* ACTIONS */
-function ackAlarms(){
-alertSystem("info","Alarms acknowledged by operator");
+/* ADMIN */
+function resetSystem(){
+state.pressure=70;
+state.temp=55;
+update();
+log("System reset");
 }
 
 function emergencyShutdown(){
-alertSystem("critical","EMERGENCY SHUTDOWN ACTIVATED");
-systemShutdown();
+state.power=false;
+log("EMERGENCY SHUTDOWN");
 }
 
-function systemShutdown(){
-systemRunning = false;
-log("SYSTEM: All operations halted");
+/* AUTO SIMULATION */
+setInterval(()=>{
+
+if(state.power){
+state.pressure+=(Math.random()-0.5)*2;
+state.temp+=(Math.random()-0.5)*2;
+update();
 }
 
-function resetSystem(){
-pressure = 70;
-temp = 55;
-systemRunning = true;
-alertSystem("info","System reset complete");
-updateSystems();
-}
+},2000);
 
 /* INIT */
-updateSystems();
+update();
 
 </script>
 
