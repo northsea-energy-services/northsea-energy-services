@@ -2,89 +2,158 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SCADA v2 - 3D Offshore Control Room</title>
+<title>SCADA Offshore Control System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-    margin:0;
-    overflow:hidden;
-    font-family:Arial;
-    background:black;
+margin:0;
+overflow:hidden;
+font-family:Arial;
+background:#000814;
+color:white;
+}
+
+/* LOGIN */
+#login{
+position:fixed;
+inset:0;
+background:black;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+input,select{
+padding:10px;
+margin:5px;
+width:220px;
+}
+
+button{
+padding:10px;
+width:220px;
+background:#00d9ff;
+border:none;
+cursor:pointer;
 }
 
 /* HUD */
 #hud{
-    position:fixed;
-    top:10px;
-    left:10px;
-    width:280px;
-    background:rgba(0,0,0,0.7);
-    color:white;
-    padding:12px;
-    border:1px solid #00d9ff;
-    border-radius:10px;
-    z-index:10;
-}
-
-button{
-    width:100%;
-    margin-top:6px;
-    padding:8px;
-    background:#00d9ff;
-    border:none;
-    cursor:pointer;
-    font-weight:bold;
+position:fixed;
+top:10px;
+left:10px;
+width:300px;
+background:rgba(0,0,0,0.6);
+border:1px solid #00d9ff;
+padding:10px;
+z-index:10;
 }
 
 /* LOG */
 #log{
-    margin-top:10px;
-    height:120px;
-    overflow:auto;
-    font-size:12px;
-    color:#00ff88;
+height:120px;
+overflow:auto;
+font-size:12px;
+color:#00ff88;
+margin-top:10px;
 }
 
-/* ALERT */
-.alert{
-    position:fixed;
-    right:20px;
-    top:20px;
-    padding:10px;
-    border-radius:8px;
-    color:white;
-    z-index:999;
+/* ALARMS */
+#alarms{
+position:fixed;
+right:10px;
+top:10px;
+width:260px;
+background:#0b1220;
+border:1px solid #1f2a44;
+padding:10px;
+height:300px;
+overflow:auto;
 }
 
-.warning{background:orange;}
-.critical{background:red;}
+.alarm{
+font-size:12px;
+margin:5px 0;
+padding:5px;
+border-left:3px solid;
+}
+
+.warning{border-color:orange;color:orange;}
+.critical{border-color:red;color:red;}
+
+canvas{display:block;}
 </style>
 </head>
 
 <body>
 
-<!-- HUD -->
-<div id="hud">
-
-<h3>SCADA v2 CONTROL ROOM</h3>
-
-<div>Selected: <span id="selected">None</span></div>
-
-<button onclick="toggleSim()">Start/Stop Simulation</button>
-<button onclick="injectFault()">Inject Fault</button>
-
-<div id="log"></div>
-
+<!-- LOGIN -->
+<div id="login">
+<h2>SCADA LOGIN</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<select id="role">
+<option value="operator">Operator</option>
+<option value="engineer">Engineer</option>
+<option value="admin">Admin</option>
+</select>
+<button onclick="login()">ENTER SYSTEM</button>
 </div>
 
-<!-- THREE JS -->
+<!-- HUD -->
+<div id="hud" style="display:none;">
+<h3>OFFSHORE SCADA</h3>
+<div>Selected: <span id="selected">None</span></div>
+<button onclick="toggle()">Start/Stop</button>
+<div id="log"></div>
+</div>
+
+<!-- ALARMS -->
+<div id="alarms" style="display:none;">
+<h4>ALARMS</h4>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <script>
 
 /* =========================
-   SCENE SETUP
+   LOGIN
+========================= */
+
+let role=null;
+let running=true;
+let selected=null;
+
+function login(){
+
+const u=document.getElementById("user").value;
+const p=document.getElementById("pass").value;
+const r=document.getElementById("role").value;
+
+if(u==="admin" && p==="1234"){
+
+role=r;
+
+document.getElementById("login").style.display="none";
+document.getElementById("hud").style.display="block";
+document.getElementById("alarms").style.display="block";
+
+log("ACCESS GRANTED: "+role);
+
+start();
+
+}else{
+alert("ACCESS DENIED");
+}
+
+}
+
+/* =========================
+   THREE JS WORLD
 ========================= */
 
 const scene=new THREE.Scene();
@@ -97,29 +166,21 @@ const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
-/* LIGHT */
 scene.add(new THREE.AmbientLight(0xffffff,0.4));
 
 const light=new THREE.DirectionalLight(0xffffff,1);
 light.position.set(10,20,10);
 scene.add(light);
 
-/* =========================
-   OCEAN
-========================= */
-
+/* OCEAN */
 const ocean=new THREE.Mesh(
 new THREE.PlaneGeometry(200,200),
 new THREE.MeshStandardMaterial({color:0x003344})
 );
-
 ocean.rotation.x=-Math.PI/2;
 scene.add(ocean);
 
-/* =========================
-   RIGS
-========================= */
-
+/* RIGS */
 const rigs=[];
 
 function createRig(name,x,z,color){
@@ -128,7 +189,7 @@ const g=new THREE.Group();
 
 const base=new THREE.Mesh(
 new THREE.BoxGeometry(2,1,2),
-new THREE.MeshStandardMaterial({color:0x333333})
+new THREE.MeshStandardMaterial({color:0x333})
 );
 
 const tower=new THREE.Mesh(
@@ -145,8 +206,8 @@ g.position.set(x,0,z);
 
 g.userData={
 name,
-pressure:70+Math.random()*10,
-temp:50+Math.random()*10
+p:70+Math.random()*10,
+t:50+Math.random()*10
 };
 
 scene.add(g);
@@ -158,10 +219,7 @@ createRig("Alpha",-10,0,0x00d9ff);
 createRig("Beta",10,0,0xffaa00);
 createRig("Gamma",0,-15,0xff0000);
 
-/* =========================
-   CLICK SELECT
-========================= */
-
+/* CLICK */
 const ray=new THREE.Raycaster();
 const mouse=new THREE.Vector2();
 
@@ -178,10 +236,10 @@ if(hits.length){
 
 let obj=hits[0].object.parent;
 
-if(obj && obj.userData.name){
-
-selectRig(obj.userData.name);
-
+if(obj.userData.name){
+selected=obj.userData.name;
+document.getElementById("selected").innerText=selected;
+log("Selected "+selected);
 }
 
 }
@@ -189,45 +247,24 @@ selectRig(obj.userData.name);
 });
 
 /* =========================
-   STATE
+   ALARM SYSTEM (INDUSTRIAL)
 ========================= */
 
-let running=true;
-let selectedRig=null;
+let alarmState={};
 
-/* =========================
-   UI FUNCTIONS
-========================= */
+function alarm(msg,type){
 
-function selectRig(name){
-selectedRig=name;
-document.getElementById("selected").innerText=name;
-log("Rig selected: "+name);
-}
+if(alarmState[msg]) return;
 
-function toggleSim(){
-running=!running;
-log("Simulation: "+running);
-}
+alarmState[msg]=true;
 
-function injectFault(){
-log("FAULT injected");
-alertBox("critical","System Fault Injected");
-}
+let d=document.createElement("div");
+d.className="alarm "+type;
+d.innerText=msg;
 
-/* =========================
-   ALERT SYSTEM
-========================= */
+document.getElementById("alarms").appendChild(d);
 
-function alertBox(type,msg){
-
-const a=document.createElement("div");
-a.className="alert "+type;
-a.innerText=msg;
-
-document.body.appendChild(a);
-
-setTimeout(()=>a.remove(),3000);
+setTimeout(()=>d.remove(),5000);
 
 log("ALERT: "+msg);
 
@@ -239,23 +276,23 @@ log("ALERT: "+msg);
 
 function log(msg){
 
-const d=document.getElementById("log");
+let l=document.getElementById("log");
 
-const p=document.createElement("div");
+let p=document.createElement("div");
 p.innerText=msg;
 
-d.appendChild(p);
+l.appendChild(p);
 
-if(d.children.length>30){
-d.removeChild(d.firstChild);
+if(l.children.length>40){
+l.removeChild(l.firstChild);
 }
 
-d.scrollTop=d.scrollHeight;
+l.scrollTop=l.scrollHeight;
 
 }
 
 /* =========================
-   UPDATE ENGINE
+   SIMULATION
 ========================= */
 
 function update(){
@@ -264,22 +301,20 @@ rigs.forEach(r=>{
 
 if(running){
 
-r.userData.pressure+=(Math.random()-0.5)*1.5;
-r.userData.temp+=(Math.random()-0.5)*1.2;
+r.userData.p+=(Math.random()-0.5)*1.2;
+r.userData.t+=(Math.random()-0.5)*1.0;
 
 }
 
-/* clamp */
-r.userData.pressure=Math.max(50,Math.min(90,r.userData.pressure));
-r.userData.temp=Math.max(40,Math.min(75,r.userData.temp));
+r.userData.p=Math.max(50,Math.min(90,r.userData.p));
+r.userData.t=Math.max(40,Math.min(75,r.userData.t));
 
-/* alarms */
-if(r.userData.pressure>85){
-alertBox("warning",r.userData.name+" HIGH PRESSURE");
+if(r.userData.p>85){
+alarm(r.userData.name+" HIGH PRESSURE","warning");
 }
 
-if(r.userData.temp>72){
-alertBox("critical",r.userData.name+" OVERHEAT");
+if(r.userData.t>72){
+alarm(r.userData.name+" OVERHEAT","critical");
 }
 
 });
@@ -301,6 +336,17 @@ renderer.render(scene,camera);
 }
 
 animate();
+
+/* START */
+function start(){
+log("SYSTEM ONLINE");
+}
+
+/* TOGGLE */
+function toggle(){
+running=!running;
+log("Simulation: "+running);
+}
 
 /* RESIZE */
 window.addEventListener("resize",()=>{
