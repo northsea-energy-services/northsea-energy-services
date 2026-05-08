@@ -3,531 +3,295 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NorthSea Enterprise Control Center</title>
-
-<!-- CHART.JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>SCADA Offshore Control System</title>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
-
 body{
-    background:#040811;
-    color:white;
-    overflow-x:hidden;
+    margin:0;
+    font-family:Arial;
+    background:#050812;
+    color:#fff;
+    overflow:hidden;
 }
 
-/* LOADER */
-#loader{
-    position:fixed;
-    inset:0;
-    background:black;
+/* TOP BAR */
+.topbar{
+    height:50px;
+    background:#0b1220;
     display:flex;
-    justify-content:center;
     align-items:center;
-    flex-direction:column;
-    z-index:9999;
+    justify-content:space-between;
+    padding:0 15px;
+    border-bottom:1px solid #1f2a44;
 }
 
-.loader-circle{
-    width:80px;
-    height:80px;
-    border:6px solid #111;
-    border-top:6px solid #00d9ff;
+.status-dot{
+    width:10px;
+    height:10px;
     border-radius:50%;
-    animation:spin 1s linear infinite;
+    background:lime;
+    box-shadow:0 0 10px lime;
 }
 
-@keyframes spin{
-    to{transform:rotate(360deg);}
-}
-
-#loader p{
-    margin-top:20px;
-    color:#00d9ff;
+/* LAYOUT */
+.container{
+    display:flex;
+    height:calc(100vh - 50px);
 }
 
 /* SIDEBAR */
 .sidebar{
-    position:fixed;
-    left:0;
-    top:0;
     width:260px;
-    height:100%;
     background:#07101d;
     border-right:1px solid #1f2a44;
-    padding:25px;
-    transition:0.3s;
-    z-index:1000;
+    padding:15px;
 }
 
-.sidebar.collapsed{
-    width:90px;
-}
-
-.logo{
+.sidebar h3{
     color:#00d9ff;
-    font-size:24px;
-    font-weight:bold;
-    margin-bottom:40px;
 }
 
-.sidebar a{
-    display:block;
-    color:#ccc;
-    text-decoration:none;
-    margin-bottom:12px;
-    padding:14px;
+.equipment{
+    padding:10px;
+    margin:8px 0;
+    background:#0f172a;
+    border:1px solid #1f2a44;
     border-radius:8px;
-    transition:0.3s;
-}
-
-.sidebar a:hover{
-    background:#00d9ff;
-    color:black;
-}
-
-/* MAIN */
-.main{
-    margin-left:260px;
-    padding:30px;
-    transition:0.3s;
-}
-
-.main.expanded{
-    margin-left:90px;
-}
-
-/* TOPBAR */
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px;
-}
-
-.top-left{
-    display:flex;
-    align-items:center;
-    gap:15px;
-}
-
-#menuBtn{
-    background:#00d9ff;
-    border:none;
-    padding:10px 15px;
     cursor:pointer;
-    border-radius:6px;
-    font-weight:bold;
 }
 
-.clock{
-    color:#00d9ff;
+.equipment:hover{
+    border-color:#00d9ff;
+}
+
+/* MAIN PANEL */
+.main{
+    flex:1;
+    padding:15px;
+    overflow:auto;
 }
 
 /* GRID */
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:20px;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
 }
 
-/* CARDS */
-.card{
+.panel{
     background:#0f172a;
     border:1px solid #1f2a44;
-    border-radius:12px;
-    padding:25px;
+    padding:15px;
+    border-radius:10px;
     position:relative;
 }
 
-.card h3{
+.panel h4{
     color:#00d9ff;
-    margin-bottom:10px;
 }
 
-.kpi{
-    font-size:38px;
-    color:#00d9ff;
+.value{
+    font-size:28px;
     margin-top:10px;
 }
 
-/* LIVE DOT */
-.live{
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:lime;
-    position:absolute;
-    top:20px;
-    right:20px;
-    box-shadow:0 0 12px lime;
-    animation:pulse 1.2s infinite;
+/* GAUGE */
+.bar{
+    height:8px;
+    background:#111;
+    border-radius:10px;
+    margin-top:10px;
+    overflow:hidden;
 }
 
-@keyframes pulse{
-    0%{opacity:1;}
-    50%{opacity:0.3;}
-    100%{opacity:1;}
+.fill{
+    height:100%;
+    background:#00d9ff;
+    width:60%;
 }
 
 /* TERMINAL */
 .terminal{
-    margin-top:30px;
+    margin-top:15px;
     background:black;
     color:#00ff88;
-    padding:25px;
-    border-radius:12px;
-    height:250px;
+    height:200px;
     overflow:auto;
-    border:1px solid #1f2a44;
+    padding:10px;
     font-family:monospace;
-}
-
-.terminal p{
-    margin-bottom:10px;
-}
-
-/* NOTIFICATIONS */
-.notifications{
-    margin-top:30px;
-}
-
-.notification{
-    background:#111827;
-    border-left:4px solid orange;
-    padding:15px;
-    margin-bottom:10px;
-    border-radius:8px;
-}
-
-/* PROFILE */
-.profile{
-    display:flex;
-    align-items:center;
-    gap:15px;
-}
-
-.profile img{
-    width:60px;
-    height:60px;
-    border-radius:50%;
-}
-
-/* CHART */
-.chart-container{
-    margin-top:30px;
-    background:#0f172a;
-    padding:20px;
-    border-radius:12px;
     border:1px solid #1f2a44;
 }
 
-/* GAUGE */
-.gauge{
-    margin-top:20px;
-    height:12px;
-    background:#111;
-    border-radius:10px;
-    overflow:hidden;
+/* ALERT SYSTEM */
+.alert{
+    position:absolute;
+    right:10px;
+    top:10px;
+    padding:8px 12px;
+    border-radius:6px;
+    font-size:12px;
+    animation:fade 0.3s ease;
 }
 
-.gauge-fill{
-    height:100%;
-    width:80%;
+.low{ background:#1e3a8a; }
+.medium{ background:orange; }
+.critical{ background:red; }
+
+@keyframes fade{
+    from{opacity:0; transform:translateY(-10px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+/* CONTROL BUTTONS */
+.controls{
+    margin-top:15px;
+}
+
+button{
+    padding:10px;
+    border:none;
+    margin-right:5px;
     background:#00d9ff;
-    animation:gaugeMove 4s infinite alternate;
+    cursor:pointer;
+    font-weight:bold;
 }
 
-@keyframes gaugeMove{
-    from{width:35%;}
-    to{width:95%;}
-}
-
-/* SECTION TITLES */
-.section-title{
-    margin-top:50px;
-    margin-bottom:20px;
-    font-size:30px;
-    color:#00d9ff;
-}
-
-/* FOOTER */
-footer{
-    text-align:center;
-    margin-top:60px;
-    color:#aaa;
-    padding:20px;
-}
-
-/* MOBILE */
-@media(max-width:900px){
-
-.sidebar{
-    width:100%;
-    height:auto;
-    position:relative;
-}
-
-.main{
-    margin-left:0;
-}
-
-.main.expanded{
-    margin-left:0;
-}
-
+button:hover{
+    opacity:0.8;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOADER -->
-<div id="loader">
-
-<div class="loader-circle"></div>
-
-<p>Initializing Offshore Systems...</p>
-
+<!-- TOPBAR -->
+<div class="topbar">
+<div>SCADA Offshore Control System <span class="status-dot"></span></div>
+<div id="clock"></div>
 </div>
 
+<div class="container">
+
 <!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
+<div class="sidebar">
+<h3>Equipment</h3>
 
-<div class="logo">NorthSea OS</div>
-
-<a href="#">Overview</a>
-<a href="#">Live Systems</a>
-<a href="#">Analytics</a>
-<a href="#">Terminal</a>
-<a href="#">Alerts</a>
-<a href="#">Weather</a>
-<a href="#">Security</a>
-<a href="#">Settings</a>
+<div class="equipment" onclick="selectEquip('Rig Alpha')">Rig Alpha</div>
+<div class="equipment" onclick="selectEquip('Pump Station')">Pump Station</div>
+<div class="equipment" onclick="selectEquip('Cooling Unit')">Cooling Unit</div>
+<div class="equipment" onclick="selectEquip('Generator')">Generator</div>
 
 </div>
 
 <!-- MAIN -->
-<div class="main" id="main">
+<div class="main">
 
-<!-- TOPBAR -->
-<div class="topbar">
+<h3>Live System Overview</h3>
 
-<div class="top-left">
-
-<button id="menuBtn">☰</button>
-
-<div class="clock" id="clock"></div>
-
-</div>
-
-<div class="profile">
-
-<img src="https://picsum.photos/100">
-
-<div>
-<h4>Operations Manager</h4>
-<p style="color:#00ff88;">ONLINE</p>
-</div>
-
-</div>
-
-</div>
-
-<!-- KPI GRID -->
 <div class="grid">
 
-<div class="card">
-<div class="live"></div>
-<h3>Platform Uptime</h3>
-<div class="kpi">98.7%</div>
-<div class="gauge"><div class="gauge-fill"></div></div>
+<div class="panel">
+<h4>Pressure</h4>
+<div class="value" id="pressure">78%</div>
+<div class="bar"><div class="fill" id="pFill"></div></div>
 </div>
 
-<div class="card">
-<div class="live"></div>
-<h3>Active Wells</h3>
-<div class="kpi">24</div>
-<div class="gauge"><div class="gauge-fill"></div></div>
+<div class="panel">
+<h4>Temperature</h4>
+<div class="value" id="temp">52°C</div>
+<div class="bar"><div class="fill"></div></div>
 </div>
 
-<div class="card">
-<div class="live"></div>
-<h3>Production Output</h3>
-<div class="kpi">14.2k</div>
-<div class="gauge"><div class="gauge-fill"></div></div>
-</div>
-
-<div class="card">
-<div class="live"></div>
-<h3>Safety Rating</h3>
-<div class="kpi">99%</div>
-<div class="gauge"><div class="gauge-fill"></div></div>
+<div class="panel">
+<h4>Flow Rate</h4>
+<div class="value" id="flow">14.2k bpd</div>
+<div class="bar"><div class="fill"></div></div>
 </div>
 
 </div>
 
-<!-- CHART -->
-<h2 class="section-title">Production Analytics</h2>
+<!-- CONTROLS -->
+<div class="controls">
 
-<div class="chart-container">
-
-<canvas id="productionChart"></canvas>
+<button onclick="triggerAlarm('low')">Test Low Alarm</button>
+<button onclick="triggerAlarm('medium')">Test Medium Alarm</button>
+<button onclick="triggerAlarm('critical')">Test Critical Alarm</button>
 
 </div>
 
 <!-- TERMINAL -->
-<h2 class="section-title">Operations Terminal</h2>
-
-<div class="terminal" id="terminal">
-
-<p>> Initializing offshore systems...</p>
+<div class="terminal" id="terminal"></div>
 
 </div>
-
-<!-- NOTIFICATIONS -->
-<h2 class="section-title">System Alerts</h2>
-
-<div class="notifications">
-
-<div class="notification">
-⚠ Offshore inspection scheduled in 2 hours.
-</div>
-
-<div class="notification">
-⚠ Backup generators currently active.
-</div>
-
-<div class="notification">
-⚠ Weather conditions stable across all rigs.
-</div>
-
-</div>
-
-<footer>
-© 2026 NorthSea Enterprise Control Center
-</footer>
 
 </div>
 
 <script>
 
-/* LOADER */
-window.onload = () => {
-setTimeout(() => {
-document.getElementById("loader").style.display = "none";
-}, 2500);
-};
-
-/* SIDEBAR TOGGLE */
-document.getElementById("menuBtn").onclick = () => {
-
-document.getElementById("sidebar")
-.classList.toggle("collapsed");
-
-document.getElementById("main")
-.classList.toggle("expanded");
-
-};
-
 /* CLOCK */
-setInterval(() => {
-
+setInterval(()=>{
 document.getElementById("clock").innerText =
 new Date().toUTCString();
-
 },1000);
 
-/* TERMINAL LOGS */
+/* TERMINAL LOG */
 const terminal = document.getElementById("terminal");
 
+function log(msg){
+const p = document.createElement("p");
+p.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+terminal.appendChild(p);
+terminal.scrollTop = terminal.scrollHeight;
+}
+
+/* EQUIPMENT SELECT */
+function selectEquip(name){
+log(`Operator selected: ${name}`);
+}
+
+/* SENSOR SIMULATION */
+setInterval(()=>{
+
+let pressure = Math.floor(Math.random()*30 + 60);
+
+document.getElementById("pressure").innerText = pressure + "%";
+document.getElementById("pFill").style.width = pressure + "%";
+
+if(pressure > 85){
+triggerAlarm("medium","Pressure high on system");
+}
+
+},3000);
+
+/* ALERT ENGINE */
+function triggerAlarm(level,msg){
+
+const alert = document.createElement("div");
+alert.className = `alert ${level}`;
+
+alert.innerText = msg || level.toUpperCase() + " ALERT";
+
+document.body.appendChild(alert);
+
+setTimeout(()=>alert.remove(),4000);
+
+log(`ALARM: ${level.toUpperCase()} - ${msg || "System event"}`);
+}
+
+/* AUTO SYSTEM LOGS */
+setInterval(()=>{
+
 const logs = [
-
-"> Pressure stable on Alpha Platform",
-"> Cooling systems operational",
-"> Monitoring offshore flow",
-"> Security network online",
-"> Satellite uplink connected",
-"> Backup generators active",
-"> Weather conditions stable"
-
+"Pressure stable",
+"Flow within limits",
+"Sensor sync complete",
+"Rig Alpha operational",
+"Cooling system normal"
 ];
 
-let index = 0;
+log(logs[Math.floor(Math.random()*logs.length)]);
 
-setInterval(() => {
-
-const p = document.createElement("p");
-
-const time = new Date().toLocaleTimeString();
-
-p.innerText = `[${time}] ${logs[index]}`;
-
-terminal.appendChild(p);
-
-terminal.scrollTop = terminal.scrollHeight;
-
-index++;
-
-if(index >= logs.length){
-index = 0;
-}
-
-},2500);
-
-/* RANDOM ALERT */
-setTimeout(() => {
-
-alert("Warning: Pressure fluctuation detected on Rig Alpha.");
-
-},15000);
-
-/* CHART */
-const ctx = document.getElementById('productionChart');
-
-new Chart(ctx, {
-
-type:'line',
-
-data:{
-labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-datasets:[{
-label:'Production Output',
-data:[12,19,14,17,22,18,25],
-borderColor:'#00d9ff',
-backgroundColor:'rgba(0,217,255,0.2)',
-fill:true,
-tension:0.4
-}]
-},
-
-options:{
-responsive:true,
-plugins:{
-legend:{
-labels:{
-color:'white'
-}
-}
-},
-scales:{
-x:{
-ticks:{color:'white'}
-},
-y:{
-ticks:{color:'white'}
-}
-}
-}
-
-});
+},5000);
 
 </script>
 
