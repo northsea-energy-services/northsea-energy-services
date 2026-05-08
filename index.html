@@ -2,205 +2,370 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>3D Offshore Rig Simulator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCADA Industrial Simulator</title>
 
 <style>
 body{
     margin:0;
-    overflow:hidden;
     font-family:Arial;
-    background:black;
+    background:#030814;
+    color:#fff;
 }
 
-/* UI OVERLAY */
-.ui{
-    position:fixed;
-    top:10px;
-    left:10px;
-    color:white;
-    z-index:10;
-    background:rgba(0,0,0,0.6);
-    padding:15px;
-    border:1px solid #00d9ff;
-    border-radius:10px;
-    width:250px;
-}
-
-h3{
-    color:#00d9ff;
-    margin-top:0;
-}
-
-button{
-    width:100%;
-    padding:10px;
-    margin-top:8px;
-    background:#00d9ff;
-    border:none;
-    cursor:pointer;
-    font-weight:bold;
+/* TOP BAR */
+.topbar{
+    height:50px;
+    background:#0b1220;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 15px;
+    border-bottom:1px solid #1f2a44;
 }
 
 .status{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:lime;
+    box-shadow:0 0 10px lime;
+}
+
+/* LAYOUT */
+.container{
+    display:flex;
+    height:calc(100vh - 50px);
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    background:#07101d;
+    border-right:1px solid #1f2a44;
+    padding:15px;
+}
+
+.unit{
+    background:#0f172a;
+    padding:10px;
+    margin-bottom:10px;
+    border-radius:8px;
+    cursor:pointer;
+    border:1px solid #1f2a44;
+}
+
+.unit:hover{
+    border-color:#00d9ff;
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    padding:15px;
+    overflow:auto;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.card{
+    background:#0f172a;
+    border:1px solid #1f2a44;
+    border-radius:10px;
+    padding:15px;
+    position:relative;
+}
+
+.card h3{
+    color:#00d9ff;
+}
+
+.value{
+    font-size:30px;
     margin-top:10px;
-    font-size:14px;
+}
+
+/* GAUGE */
+.bar{
+    height:10px;
+    background:#111;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.fill{
+    height:100%;
+    background:#00d9ff;
+    width:60%;
+    transition:0.3s;
+}
+
+/* TERMINAL */
+.terminal{
+    margin-top:15px;
+    height:180px;
+    background:black;
     color:#00ff88;
+    padding:10px;
+    font-family:monospace;
+    overflow:auto;
+    border:1px solid #1f2a44;
+}
+
+/* ALERTS */
+.alert{
+    position:fixed;
+    right:20px;
+    top:60px;
+    padding:12px;
+    border-radius:8px;
+    animation:slide 0.3s ease;
+    z-index:9999;
+}
+
+.info{background:#1e3a8a;}
+.warning{background:orange;}
+.critical{background:red;}
+
+@keyframes slide{
+    from{transform:translateX(200px);opacity:0;}
+    to{transform:translateX(0);opacity:1;}
+}
+
+/* CONTROL BUTTONS */
+.controls{
+    margin-top:15px;
+}
+
+button{
+    padding:10px;
+    margin-right:5px;
+    background:#00d9ff;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(0.96);
 }
 </style>
 </head>
 
 <body>
 
-<div class="ui">
+<div class="topbar">
+<div class="status">
+<div class="dot"></div>
+SCADA SIMULATION ACTIVE
+</div>
+<div id="clock"></div>
+</div>
 
-<h3>Offshore 3D Rig Sim</h3>
+<div class="container">
 
-<button onclick="toggleDrill()">Toggle Drill</button>
-<button onclick="increasePressure()">Increase Pressure</button>
-<button onclick="resetSim()">Reset System</button>
+<!-- SIDEBAR -->
+<div class="sidebar">
 
-<div class="status" id="status">
-System Stable
+<h3 style="color:#00d9ff;">Equipment Control</h3>
+
+<div class="unit" onclick="selectUnit('Rig Alpha')">Rig Alpha</div>
+<div class="unit" onclick="selectUnit('Pump Station')">Pump Station</div>
+<div class="unit" onclick="selectUnit('Cooling Unit')">Cooling Unit</div>
+<div class="unit" onclick="selectUnit('Generator')">Generator</div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h3>Live Industrial Systems</h3>
+
+<div class="grid">
+
+<div class="card">
+<h3>Pressure</h3>
+<div class="value" id="pressure">70%</div>
+<div class="bar"><div class="fill" id="pFill"></div></div>
+</div>
+
+<div class="card">
+<h3>Temperature</h3>
+<div class="value" id="temp">55°C</div>
+<div class="bar"><div class="fill" id="tFill"></div></div>
+</div>
+
+<div class="card">
+<h3>System Load</h3>
+<div class="value" id="load">Normal</div>
 </div>
 
 </div>
 
-<!-- THREE JS -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<!-- CONTROLS -->
+<div class="controls">
+
+<button onclick="ackAlarms()">Acknowledge Alarms</button>
+<button onclick="emergencyShutdown()">Emergency Shutdown</button>
+<button onclick="resetSystem()">Reset System</button>
+
+</div>
+
+<!-- TERMINAL -->
+<div class="terminal" id="terminal"></div>
+
+</div>
+
+</div>
 
 <script>
 
-/* SCENE */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000814);
-
-/* CAMERA */
-const camera = new THREE.PerspectiveCamera(
-75,
-window.innerWidth/window.innerHeight,
-0.1,
-1000
-);
-
-camera.position.set(0,5,10);
-
-/* RENDERER */
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-/* LIGHTS */
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(5,10,5);
-scene.add(light);
-
-scene.add(new THREE.AmbientLight(0x404040));
-
-/* OIL RIG STRUCTURE */
-const rig = new THREE.Group();
-
-/* BASE */
-const base = new THREE.Mesh(
-new THREE.BoxGeometry(4,1,4),
-new THREE.MeshStandardMaterial({color:0x333333})
-);
-rig.add(base);
-
-/* TOWER */
-const tower = new THREE.Mesh(
-new THREE.CylinderGeometry(0.5,0.5,6),
-new THREE.MeshStandardMaterial({color:0x00d9ff})
-);
-tower.position.y = 4;
-rig.add(tower);
-
-/* DRILL */
-const drill = new THREE.Mesh(
-new THREE.CylinderGeometry(0.2,0.2,3),
-new THREE.MeshStandardMaterial({color:0xff0000})
-);
-drill.position.y = 1;
-rig.add(drill);
-
-scene.add(rig);
-
-/* GROUND */
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(100,100),
-new THREE.MeshStandardMaterial({color:0x001122})
-);
-ground.rotation.x = -Math.PI/2;
-scene.add(ground);
-
-/* SIM VARIABLES */
-let drilling = false;
+/* SYSTEM STATE */
 let pressure = 70;
+let temp = 55;
+let systemRunning = true;
 
-/* FUNCTIONS */
-function toggleDrill(){
-drilling = !drilling;
-updateStatus("Drill: " + (drilling ? "ACTIVE" : "STOPPED"));
+/* CLOCK */
+setInterval(()=>{
+document.getElementById("clock").innerText =
+new Date().toUTCString();
+},1000);
+
+/* LOG */
+const terminal = document.getElementById("terminal");
+
+function log(msg){
+const p = document.createElement("p");
+p.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+terminal.appendChild(p);
+terminal.scrollTop = terminal.scrollHeight;
 }
 
-function increasePressure(){
-pressure += 10;
-if(pressure > 100){
-updateStatus("⚠ CRITICAL PRESSURE LEVEL");
-} else {
-updateStatus("Pressure: " + pressure + "%");
-}
+/* ALERT ENGINE */
+function alertSystem(type,msg){
+
+const a = document.createElement("div");
+a.className = `alert ${type}`;
+a.innerText = msg;
+
+document.body.appendChild(a);
+
+setTimeout(()=>a.remove(),4000);
+
+log(`${type.toUpperCase()}: ${msg}`);
 }
 
-function resetSim(){
+/* EQUIPMENT CONTROL */
+function selectUnit(unit){
+
+log("Operator selected: " + unit);
+
+switch(unit){
+
+case "Rig Alpha":
+systemRunning = !systemRunning;
+alertSystem("warning","Rig Alpha drill toggled");
+break;
+
+case "Pump Station":
+pressure += 12;
+alertSystem("info","Pump Station increased pressure");
+break;
+
+case "Cooling Unit":
+temp -= 6;
+alertSystem("info","Cooling system engaged");
+break;
+
+case "Generator":
+systemRunning = true;
+alertSystem("info","Generator stabilized power");
+break;
+
+}
+
+updateSystems();
+}
+
+/* SYSTEM UPDATE */
+function updateSystems(){
+
+pressure = Math.max(50,Math.min(100,pressure));
+temp = Math.max(35,Math.min(90,temp));
+
+document.getElementById("pressure").innerText = Math.floor(pressure)+"%";
+document.getElementById("temp").innerText = Math.floor(temp)+"°C";
+
+document.getElementById("pFill").style.width = pressure+"%";
+document.getElementById("tFill").style.width = temp+"%";
+
+/* INTERLOCKS */
+if(pressure > 85){
+alertSystem("critical","Pressure Critical - System Stress");
+}
+
+if(temp > 75){
+alertSystem("critical","Overheat Detected - Cooling Failure Risk");
+}
+
+if(pressure > 90 && temp > 80){
+alertSystem("critical","SYSTEM TRIP INITIATED");
+systemShutdown();
+}
+
+}
+
+/* AUTO DRIFT */
+setInterval(()=>{
+
+if(systemRunning){
+
+pressure += (Math.random()-0.5)*3;
+temp += (Math.random()-0.5)*2;
+
+updateSystems();
+
+}
+
+},2500);
+
+/* ACTIONS */
+function ackAlarms(){
+alertSystem("info","Alarms acknowledged by operator");
+}
+
+function emergencyShutdown(){
+alertSystem("critical","EMERGENCY SHUTDOWN ACTIVATED");
+systemShutdown();
+}
+
+function systemShutdown(){
+systemRunning = false;
+log("SYSTEM: All operations halted");
+}
+
+function resetSystem(){
 pressure = 70;
-drilling = false;
-drill.position.y = 1;
-updateStatus("System Reset");
+temp = 55;
+systemRunning = true;
+alertSystem("info","System reset complete");
+updateSystems();
 }
 
-/* STATUS */
-function updateStatus(msg){
-document.getElementById("status").innerText = msg;
-}
-
-/* ANIMATION LOOP */
-function animate(){
-
-requestAnimationFrame(animate);
-
-/* DRILL MOVEMENT */
-if(drilling){
-drill.position.y -= 0.02;
-if(drill.position.y < -2){
-drill.position.y = 1;
-}
-}
-
-/* ROTATE RIG */
-rig.rotation.y += 0.002;
-
-/* PRESSURE EFFECT */
-if(pressure > 90){
-rig.position.y = Math.sin(Date.now()*0.01)*0.2;
-}
-
-/* RENDER */
-renderer.render(scene,camera);
-
-}
-
-animate();
-
-/* RESIZE */
-window.addEventListener("resize",()=>{
-
-camera.aspect = window.innerWidth/window.innerHeight;
-camera.updateProjectionMatrix();
-
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-});
+/* INIT */
+updateSystems();
 
 </script>
 
