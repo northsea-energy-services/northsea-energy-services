@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Offshore Control Room UI</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCADA Control System - Clean Build</title>
 
 <style>
 body{
@@ -13,21 +12,42 @@ body{
     color:white;
 }
 
-/* TOP STATUS BAR */
+/* LOGIN SCREEN */
+#login{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+input{
+    padding:10px;
+    margin:5px;
+    width:220px;
+}
+
+button{
+    padding:10px;
+    width:220px;
+    background:#00d9ff;
+    border:none;
+    cursor:pointer;
+}
+
+/* TOP BAR */
 .header{
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    padding:12px 20px;
+    padding:15px;
     background:#0b1220;
     border-bottom:1px solid #1f2a44;
 }
 
-.status-ok{color:lime;}
-.status-warn{color:orange;}
-.status-bad{color:red;}
-
-/* MAIN GRID */
+/* GRID */
 .grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
@@ -35,233 +55,231 @@ body{
     padding:15px;
 }
 
-/* RIG CARDS */
 .card{
     background:#0f172a;
-    border:1px solid #1f2a44;
-    border-radius:10px;
     padding:15px;
-}
-
-.card h3{
-    margin:0;
-    color:#00d9ff;
-}
-
-/* ALARMS PANEL */
-.alarm-panel{
-    position:fixed;
-    right:10px;
-    top:70px;
-    width:260px;
-    background:#0f172a;
+    border-radius:10px;
     border:1px solid #1f2a44;
-    padding:10px;
-    height:300px;
-    overflow:auto;
 }
 
-.alarm{
-    font-size:12px;
-    padding:5px;
-    margin-bottom:5px;
-    border-left:3px solid;
-}
-
-.warning{border-color:orange;color:orange;}
-.critical{border-color:red;color:red;}
-
-/* EVENT LOG */
-.log{
+/* LOG */
+#log{
     position:fixed;
     bottom:10px;
     left:10px;
-    width:400px;
+    width:350px;
     height:140px;
-    background:black;
-    border:1px solid #1f2a44;
     overflow:auto;
-    font-size:12px;
-    padding:8px;
+    background:black;
     color:#00ff88;
+    font-size:12px;
+    padding:10px;
+    border:1px solid #1f2a44;
 }
 
-/* BUTTONS */
-button{
-    padding:8px;
-    margin-top:8px;
-    width:100%;
-    background:#00d9ff;
-    border:none;
-    cursor:pointer;
+/* ALERT */
+.alert{
+    position:fixed;
+    right:10px;
+    top:70px;
+    padding:10px;
+    border-radius:8px;
+    color:white;
 }
+
+.warning{background:orange;}
+.critical{background:red;}
+.info{background:#1e3a8a;}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
+<!-- LOGIN -->
+<div id="login">
+<h2>SCADA LOGIN</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">ENTER SYSTEM</button>
+</div>
+
+<!-- MAIN SYSTEM -->
+<div id="app" style="display:none;">
+
 <div class="header">
-
-<div>
-OFFSHORE CONTROL ROOM
+<div>OFFSHORE SCADA CONTROL</div>
+<div id="status">SYSTEM: STABLE</div>
 </div>
 
-<div id="systemStatus" class="status-ok">
-SYSTEM HEALTH: STABLE
-</div>
-
-</div>
-
-<!-- GRID -->
 <div class="grid">
 
 <div class="card">
 <h3>Rig Alpha</h3>
-<div id="alpha">Loading...</div>
-<button onclick="select('Alpha')">SELECT</button>
+<p id="a">Pressure: 70 | Temp: 55</p>
+<button onclick="select('Alpha')">Select</button>
 </div>
 
 <div class="card">
 <h3>Rig Beta</h3>
-<div id="beta">Loading...</div>
-<button onclick="select('Beta')">SELECT</button>
+<p id="b">Pressure: 68 | Temp: 52</p>
+<button onclick="select('Beta')">Select</button>
 </div>
 
 <div class="card">
 <h3>Rig Gamma</h3>
-<div id="gamma">Loading...</div>
-<button onclick="select('Gamma')">SELECT</button>
+<p id="c">Pressure: 72 | Temp: 60</p>
+<button onclick="select('Gamma')">Select</button>
 </div>
 
 </div>
 
-<!-- ALARMS -->
-<div class="alarm-panel">
-<h4>ALARMS</h4>
-<div id="alarms"></div>
-</div>
+<div id="log"></div>
 
-<!-- LOG -->
-<div class="log" id="log"></div>
+</div>
 
 <script>
 
-/* =========================
-   STATE
-========================= */
+/* =====================
+   LOGIN SYSTEM
+===================== */
 
-let rigs = {
+function login(){
+
+let u=document.getElementById("user").value;
+let p=document.getElementById("pass").value;
+
+/* SIMPLE DEMO LOGIN */
+if(u==="admin" && p==="1234"){
+
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
+
+log("ACCESS GRANTED");
+
+startSystem();
+
+}else{
+
+alert("ACCESS DENIED");
+
+}
+
+}
+
+/* =====================
+   SYSTEM STATE
+===================== */
+
+let rigs={
 Alpha:{p:70,t:55},
 Beta:{p:68,t:52},
 Gamma:{p:72,t:60}
 };
 
-let selected = null;
-let alarmState = {};
+let selected=null;
 
-/* =========================
+/* =====================
    SELECT RIG
-========================= */
+===================== */
 
 function select(r){
-selected = r;
-log("Selected: " + r);
+selected=r;
+log("Selected rig: "+r);
 }
 
-/* =========================
-   LOG SYSTEM (LIMITED)
-========================= */
+/* =====================
+   LOG SYSTEM
+===================== */
 
 function log(msg){
 
-let d = document.getElementById("log");
+let d=document.getElementById("log");
 
-let p = document.createElement("div");
-p.innerText = msg;
+let p=document.createElement("div");
+p.innerText=msg;
 
 d.appendChild(p);
 
-if(d.children.length > 30){
+if(d.children.length>30){
 d.removeChild(d.firstChild);
 }
 
-d.scrollTop = d.scrollHeight;
+d.scrollTop=d.scrollHeight;
 
 }
 
-/* =========================
-   ALARM SYSTEM (NO SPAM)
-========================= */
+/* =====================
+   ALERT SYSTEM
+===================== */
 
-function raiseAlarm(type,msg){
+function alertBox(type,msg){
 
-if(alarmState[msg] && Date.now()-alarmState[msg]<4000){
-return;
-}
+let a=document.createElement("div");
+a.className="alert "+type;
+a.innerText=msg;
 
-alarmState[msg]=Date.now();
+document.body.appendChild(a);
 
-let box=document.createElement("div");
-box.className="alarm "+type;
-box.innerText=msg;
-
-document.getElementById("alarms").appendChild(box);
-
-setTimeout(()=>box.remove(),6000);
+setTimeout(()=>a.remove(),3000);
 
 log("ALERT: "+msg);
 
 }
 
-/* =========================
-   SYSTEM UPDATE
-========================= */
+/* =====================
+   UPDATE SYSTEM
+===================== */
 
 function update(){
 
-Object.keys(rigs).forEach(r=>{
+rigs.Alpha.p+=(Math.random()-0.5)*2;
+rigs.Alpha.t+=(Math.random()-0.5)*1.5;
 
-let rig=rigs[r];
+rigs.Beta.p+=(Math.random()-0.5)*2;
+rigs.Beta.t+=(Math.random()-0.5)*1.5;
 
-rig.p += (Math.random()-0.5)*1.5;
-rig.t += (Math.random()-0.5)*1.2;
+rigs.Gamma.p+=(Math.random()-0.5)*2;
+rigs.Gamma.t+=(Math.random()-0.5)*1.5;
 
-/* clamp */
-rig.p=Math.max(50,Math.min(90,rig.p));
-rig.t=Math.max(40,Math.min(75,rig.t));
+/* LIMITS */
+for(let r in rigs){
 
-/* alerts */
-if(rig.p>85) raiseAlarm("warning",r+" HIGH PRESSURE");
-if(rig.t>72) raiseAlarm("critical",r+" OVERHEAT");
+rigs[r].p=Math.max(50,Math.min(90,rigs[r].p));
+rigs[r].t=Math.max(40,Math.min(75,rigs[r].t));
 
-});
+if(rigs[r].p>85){
+alertBox("warning",r+" HIGH PRESSURE");
+}
 
-/* UI UPDATE */
-document.getElementById("alpha").innerText =
-"P: "+rigs.Alpha.p.toFixed(1)+" | T: "+rigs.Alpha.t.toFixed(1);
-
-document.getElementById("beta").innerText =
-"P: "+rigs.Beta.p.toFixed(1)+" | T: "+rigs.Beta.t.toFixed(1);
-
-document.getElementById("gamma").innerText =
-"P: "+rigs.Gamma.p.toFixed(1)+" | T: "+rigs.Gamma.t.toFixed(1);
-
-/* SYSTEM STATUS */
-let status=document.getElementById("systemStatus");
-
-if(rigs.Alpha.p>85||rigs.Beta.p>85||rigs.Gamma.p>85){
-status.innerText="SYSTEM HEALTH: WARNING";
-status.className="status-warn";
-}else{
-status.innerText="SYSTEM HEALTH: STABLE";
-status.className="status-ok";
+if(rigs[r].t>72){
+alertBox("critical",r+" OVERHEAT");
 }
 
 }
 
-/* LOOP */
+/* UI */
+document.getElementById("a").innerText=
+`Pressure: ${rigs.Alpha.p.toFixed(1)} | Temp: ${rigs.Alpha.t.toFixed(1)}`;
+
+document.getElementById("b").innerText=
+`Pressure: ${rigs.Beta.p.toFixed(1)} | Temp: ${rigs.Beta.t.toFixed(1)}`;
+
+document.getElementById("c").innerText=
+`Pressure: ${rigs.Gamma.p.toFixed(1)} | Temp: ${rigs.Gamma.t.toFixed(1)}`;
+
+}
+
+/* =====================
+   SYSTEM LOOP
+===================== */
+
+function startSystem(){
+
 setInterval(update,1500);
+
+log("SCADA SYSTEM ONLINE");
+
+}
 
 </script>
 
