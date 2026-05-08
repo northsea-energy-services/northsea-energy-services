@@ -1,383 +1,198 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Enterprise SCADA v4 - 3D Offshore Control</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{
-    margin:0;
-    overflow:hidden;
-    font-family:Arial;
-    background:black;
-}
-
-/* LOGIN */
-#loginScreen{
-    position:fixed;
-    inset:0;
-    background:#000;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    z-index:99999;
-    color:#00d9ff;
-}
-
-input,select{
-    padding:10px;
-    margin:5px;
-    width:220px;
-}
-
-/* HUD */
-#hud{
-    position:fixed;
-    top:10px;
-    left:10px;
-    width:300px;
-    background:rgba(0,0,0,0.6);
-    color:white;
-    padding:15px;
-    border:1px solid #00d9ff;
-    border-radius:10px;
-    z-index:10;
-}
-
-button{
-    width:100%;
-    margin-top:5px;
-    padding:8px;
-    background:#00d9ff;
-    border:none;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-/* LOG */
-#log{
-    height:140px;
-    overflow:auto;
-    font-size:12px;
-    margin-top:10px;
-    color:#00ff88;
-}
-
-/* ALERT */
-.alert{
-    position:fixed;
-    right:20px;
-    top:20px;
-    padding:10px;
-    border-radius:8px;
-    color:white;
-    z-index:999;
-}
-
-.warning{background:orange;}
-.critical{background:red;}
-.info{background:#1e3a8a;}
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-<div id="loginScreen">
-
-<h1>SCADA SECURITY GATE</h1>
-
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-
-<select id="role">
-<option value="operator">Operator</option>
-<option value="engineer">Engineer</option>
-<option value="admin">Admin</option>
-</select>
-
-<button onclick="login()">LOGIN</button>
-
-<p id="msg"></p>
-
-</div>
-
-<!-- HUD -->
-<div id="hud" style="display:none;">
-
-<h3>SCADA v4 CONTROL</h3>
-
-<div>Selected Rig: <span id="selected">None</span></div>
-
-<button onclick="shutdown()">Emergency Shutdown</button>
-<button onclick="ack()">Acknowledge Alarms</button>
-
-<div id="log"></div>
-
-</div>
-
-<!-- THREE JS -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-
-<script>
-
 /* =========================
-   SECURITY SYSTEM
+   FAKE "HASHED" PASSWORDS
+   (simulation only)
 ========================= */
 
-let attempts=0;
-let locked=false;
-let role=null;
-let selectedRig=null;
+function fakeHash(str){
+    let hash = 0;
+    for(let i=0;i<str.length;i++){
+        hash = (hash * 31 + str.charCodeAt(i)) % 100000;
+    }
+    return hash;
+}
 
-const USERS={
-operator:{u:"op",p:"1111"},
-engineer:{u:"eng",p:"2222"},
-admin:{u:"admin",p:"1234"}
+/* STORED CREDENTIALS (HASHED) */
+const USERS = {
+    operator: {
+        user: "op",
+        pass: fakeHash("1111")
+    },
+    engineer: {
+        user: "eng",
+        pass: fakeHash("2222")
+    },
+    admin: {
+        user: "admin",
+        pass: fakeHash("1234")
+    }
 };
+
+/* =========================
+   SECURITY STATE
+========================= */
+
+let attempts = 0;
+let locked = false;
+let sessionToken = null;
+let currentRole = null;
+let lastActivity = Date.now();
+
+/* =========================
+   LOGIN FUNCTION
+========================= */
 
 function login(){
 
-if(locked) return;
+if(locked){
+audit("LOGIN BLOCKED - SYSTEM LOCKED");
+return;
+}
 
-let u=document.getElementById("user").value;
-let p=document.getElementById("pass").value;
-let r=document.getElementById("role").value;
+const role = document.getElementById("role").value;
+const user = document.getElementById("user").value;
+const pass = document.getElementById("pass").value;
 
-let acc=USERS[r];
+const account = USERS[role];
 
-if(acc.u===u && acc.p===p){
+if(!account){
+audit("INVALID ROLE SELECTION");
+return;
+}
 
-role=r;
+/* HASH INPUT PASSWORD */
+const inputHash = fakeHash(pass);
 
-document.getElementById("loginScreen").style.display="none";
-document.getElementById("hud").style.display="block";
+/* AUTH CHECK */
+if(account.user === user && account.pass === inputHash){
 
-log("ACCESS GRANTED: "+role);
+sessionToken = generateToken();
+currentRole = role;
+attempts = 0;
 
-startSession();
+document.getElementById("loginScreen").style.display = "none";
+document.getElementById("hud").style.display = "block";
+
+audit("LOGIN SUCCESS → " + role);
+audit("SESSION TOKEN CREATED: " + sessionToken);
+
+startSessionMonitor();
 
 }else{
 
 attempts++;
-log("FAILED LOGIN ATTEMPT "+attempts);
+audit("FAILED LOGIN ATTEMPT (" + attempts + ")");
 
-document.getElementById("msg").innerText="Invalid credentials";
-
-if(attempts>=3){
-locked=true;
-document.getElementById("msg").innerText="SYSTEM LOCKED";
-setTimeout(()=>{locked=false;attempts=0;},10000);
+if(attempts >= 3){
+lockSystem();
 }
 
 }
 
 }
 
-/* SESSION TIMEOUT */
-function startSession(){
+/* =========================
+   SESSION TOKEN GENERATOR
+========================= */
+
+function generateToken(){
+return "sess_" + Math.random().toString(36).substring(2) + Date.now();
+}
+
+/* =========================
+   LOCK SYSTEM
+========================= */
+
+function lockSystem(){
+
+locked = true;
+
+audit("SYSTEM LOCKED DUE TO BRUTE FORCE");
+
 setTimeout(()=>{
-logout();
-},300000);
+locked = false;
+attempts = 0;
+audit("SYSTEM UNLOCKED AFTER TIMEOUT");
+},15000);
+
 }
+
+/* =========================
+   SESSION MONITOR
+========================= */
+
+function startSessionMonitor(){
+
+setInterval(()=>{
+
+if(!sessionToken) return;
+
+let now = Date.now();
+
+/* AUTO LOGOUT AFTER 60s inactivity */
+if(now - lastActivity > 60000){
+
+audit("SESSION TIMEOUT - AUTO LOGOUT");
+logout();
+
+}
+
+},5000);
+
+}
+
+/* UPDATE ACTIVITY */
+document.addEventListener("click",()=>{
+lastActivity = Date.now();
+});
+
+/* =========================
+   LOGOUT
+========================= */
 
 function logout(){
+
+audit("USER LOGGED OUT");
+
+sessionToken = null;
+currentRole = null;
+
 location.reload();
+
 }
 
 /* =========================
-   THREE JS WORLD
+   ROLE PROTECTION
 ========================= */
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x001018);
+function requireRole(level){
 
-const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-camera.position.set(0,8,18);
-
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-document.body.appendChild(renderer.domElement);
-
-scene.add(new THREE.AmbientLight(0xffffff,0.4));
-
-const light=new THREE.DirectionalLight(0xffffff,1);
-light.position.set(10,20,10);
-scene.add(light);
-
-/* OCEAN */
-const ocean=new THREE.Mesh(
-new THREE.PlaneGeometry(200,200),
-new THREE.MeshStandardMaterial({color:0x003344})
-);
-ocean.rotation.x=-Math.PI/2;
-scene.add(ocean);
-
-/* RIGS */
-const rigs=[];
-
-function createRig(name,x,z,color){
-
-const g=new THREE.Group();
-
-const base=new THREE.Mesh(
-new THREE.BoxGeometry(2,1,2),
-new THREE.MeshStandardMaterial({color:0x333333})
-);
-
-const tower=new THREE.Mesh(
-new THREE.CylinderGeometry(0.5,0.5,5),
-new THREE.MeshStandardMaterial({color})
-);
-
-tower.position.y=3;
-
-g.add(base);
-g.add(tower);
-
-g.position.set(x,0,z);
-
-g.userData={
-name,
-pressure:70+Math.random()*10,
-temp:50+Math.random()*10
+const hierarchy = {
+operator:1,
+engineer:2,
+admin:3
 };
 
-scene.add(g);
-rigs.push(g);
+return hierarchy[currentRole] >= hierarchy[level];
 
 }
-
-createRig("Alpha",-10,0,0x00d9ff);
-createRig("Beta",10,0,0xffaa00);
-createRig("Gamma",0,-15,0xff0000);
-
-/* CLICK SELECT */
-const ray=new THREE.Raycaster();
-const mouse=new THREE.Vector2();
-
-window.addEventListener("click",(e)=>{
-
-mouse.x=(e.clientX/innerWidth)*2-1;
-mouse.y=-(e.clientY/innerHeight)*2+1;
-
-ray.setFromCamera(mouse,camera);
-
-let hits=ray.intersectObjects(scene.children,true);
-
-if(hits.length){
-
-let obj=hits[0].object.parent;
-
-if(obj && obj.userData.name){
-
-selectedRig=obj.userData.name;
-document.getElementById("selected").innerText=selectedRig;
-log("Selected "+selectedRig);
-
-}
-
-}
-
-});
 
 /* =========================
-   SCADA SIM ENGINE
+   AUDIT SYSTEM
 ========================= */
 
-let running=true;
+function audit(msg){
 
-function update(){
+const logBox = document.getElementById("log");
 
-rigs.forEach(r=>{
+if(logBox){
 
-if(running){
-
-r.userData.pressure+=(Math.random()-0.5)*2;
-r.userData.temp+=(Math.random()-0.5)*2;
-
-}
-
-if(r.userData.pressure>90){
-alertBox("warning",r.userData.name+" HIGH PRESSURE");
-}
-
-if(r.userData.temp>75){
-alertBox("critical",r.userData.name+" OVERHEAT");
-}
-
-});
+const p = document.createElement("div");
+p.innerText = "[AUDIT] " + msg;
+logBox.appendChild(p);
+logBox.scrollTop = logBox.scrollHeight;
 
 }
 
-/* ALERTS */
-function alertBox(type,msg){
+console.log("[AUDIT]",msg);
 
-let a=document.createElement("div");
-a.className="alert "+type;
-a.innerText=msg;
-
-document.body.appendChild(a);
-
-setTimeout(()=>a.remove(),3000);
-
-log("ALERT: "+msg);
-
-}
-
-/* LOG */
-function log(msg){
-
-let d=document.getElementById("log");
-let p=document.createElement("div");
-p.innerText=msg;
-d.appendChild(p);
-d.scrollTop=d.scrollHeight;
-
-}
-
-/* ACTIONS */
-function shutdown(){
-
-if(role!=="admin"){
-log("ACCESS DENIED: shutdown");
-return;
-}
-
-running=false;
-log("EMERGENCY SHUTDOWN EXECUTED");
-
-}
-
-function ack(){
-log("Alarms acknowledged");
-}
-
-/* LOOP */
-function animate(){
-
-requestAnimationFrame(animate);
-
-update();
-
-renderer.render(scene,camera);
-
-}
-
-animate();
-
-/* RESIZE */
-window.addEventListener("resize",()=>{
-
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
-
-});
-
-</script>
-
-</body>
-</html>
+}6j 
