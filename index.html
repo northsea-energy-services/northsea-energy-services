@@ -1,198 +1,269 @@
-/* =========================
-   FAKE "HASHED" PASSWORDS
-   (simulation only)
-========================= */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Offshore Control Room UI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-function fakeHash(str){
-    let hash = 0;
-    for(let i=0;i<str.length;i++){
-        hash = (hash * 31 + str.charCodeAt(i)) % 100000;
-    }
-    return hash;
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#050814;
+    color:white;
 }
 
-/* STORED CREDENTIALS (HASHED) */
-const USERS = {
-    operator: {
-        user: "op",
-        pass: fakeHash("1111")
-    },
-    engineer: {
-        user: "eng",
-        pass: fakeHash("2222")
-    },
-    admin: {
-        user: "admin",
-        pass: fakeHash("1234")
-    }
+/* TOP STATUS BAR */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 20px;
+    background:#0b1220;
+    border-bottom:1px solid #1f2a44;
+}
+
+.status-ok{color:lime;}
+.status-warn{color:orange;}
+.status-bad{color:red;}
+
+/* MAIN GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    padding:15px;
+}
+
+/* RIG CARDS */
+.card{
+    background:#0f172a;
+    border:1px solid #1f2a44;
+    border-radius:10px;
+    padding:15px;
+}
+
+.card h3{
+    margin:0;
+    color:#00d9ff;
+}
+
+/* ALARMS PANEL */
+.alarm-panel{
+    position:fixed;
+    right:10px;
+    top:70px;
+    width:260px;
+    background:#0f172a;
+    border:1px solid #1f2a44;
+    padding:10px;
+    height:300px;
+    overflow:auto;
+}
+
+.alarm{
+    font-size:12px;
+    padding:5px;
+    margin-bottom:5px;
+    border-left:3px solid;
+}
+
+.warning{border-color:orange;color:orange;}
+.critical{border-color:red;color:red;}
+
+/* EVENT LOG */
+.log{
+    position:fixed;
+    bottom:10px;
+    left:10px;
+    width:400px;
+    height:140px;
+    background:black;
+    border:1px solid #1f2a44;
+    overflow:auto;
+    font-size:12px;
+    padding:8px;
+    color:#00ff88;
+}
+
+/* BUTTONS */
+button{
+    padding:8px;
+    margin-top:8px;
+    width:100%;
+    background:#00d9ff;
+    border:none;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+
+<div>
+OFFSHORE CONTROL ROOM
+</div>
+
+<div id="systemStatus" class="status-ok">
+SYSTEM HEALTH: STABLE
+</div>
+
+</div>
+
+<!-- GRID -->
+<div class="grid">
+
+<div class="card">
+<h3>Rig Alpha</h3>
+<div id="alpha">Loading...</div>
+<button onclick="select('Alpha')">SELECT</button>
+</div>
+
+<div class="card">
+<h3>Rig Beta</h3>
+<div id="beta">Loading...</div>
+<button onclick="select('Beta')">SELECT</button>
+</div>
+
+<div class="card">
+<h3>Rig Gamma</h3>
+<div id="gamma">Loading...</div>
+<button onclick="select('Gamma')">SELECT</button>
+</div>
+
+</div>
+
+<!-- ALARMS -->
+<div class="alarm-panel">
+<h4>ALARMS</h4>
+<div id="alarms"></div>
+</div>
+
+<!-- LOG -->
+<div class="log" id="log"></div>
+
+<script>
+
+/* =========================
+   STATE
+========================= */
+
+let rigs = {
+Alpha:{p:70,t:55},
+Beta:{p:68,t:52},
+Gamma:{p:72,t:60}
 };
 
-/* =========================
-   SECURITY STATE
-========================= */
-
-let attempts = 0;
-let locked = false;
-let sessionToken = null;
-let currentRole = null;
-let lastActivity = Date.now();
+let selected = null;
+let alarmState = {};
 
 /* =========================
-   LOGIN FUNCTION
+   SELECT RIG
 ========================= */
 
-function login(){
+function select(r){
+selected = r;
+log("Selected: " + r);
+}
 
-if(locked){
-audit("LOGIN BLOCKED - SYSTEM LOCKED");
+/* =========================
+   LOG SYSTEM (LIMITED)
+========================= */
+
+function log(msg){
+
+let d = document.getElementById("log");
+
+let p = document.createElement("div");
+p.innerText = msg;
+
+d.appendChild(p);
+
+if(d.children.length > 30){
+d.removeChild(d.firstChild);
+}
+
+d.scrollTop = d.scrollHeight;
+
+}
+
+/* =========================
+   ALARM SYSTEM (NO SPAM)
+========================= */
+
+function raiseAlarm(type,msg){
+
+if(alarmState[msg] && Date.now()-alarmState[msg]<4000){
 return;
 }
 
-const role = document.getElementById("role").value;
-const user = document.getElementById("user").value;
-const pass = document.getElementById("pass").value;
+alarmState[msg]=Date.now();
 
-const account = USERS[role];
+let box=document.createElement("div");
+box.className="alarm "+type;
+box.innerText=msg;
 
-if(!account){
-audit("INVALID ROLE SELECTION");
-return;
-}
+document.getElementById("alarms").appendChild(box);
 
-/* HASH INPUT PASSWORD */
-const inputHash = fakeHash(pass);
+setTimeout(()=>box.remove(),6000);
 
-/* AUTH CHECK */
-if(account.user === user && account.pass === inputHash){
-
-sessionToken = generateToken();
-currentRole = role;
-attempts = 0;
-
-document.getElementById("loginScreen").style.display = "none";
-document.getElementById("hud").style.display = "block";
-
-audit("LOGIN SUCCESS → " + role);
-audit("SESSION TOKEN CREATED: " + sessionToken);
-
-startSessionMonitor();
-
-}else{
-
-attempts++;
-audit("FAILED LOGIN ATTEMPT (" + attempts + ")");
-
-if(attempts >= 3){
-lockSystem();
-}
-
-}
+log("ALERT: "+msg);
 
 }
 
 /* =========================
-   SESSION TOKEN GENERATOR
+   SYSTEM UPDATE
 ========================= */
 
-function generateToken(){
-return "sess_" + Math.random().toString(36).substring(2) + Date.now();
-}
+function update(){
 
-/* =========================
-   LOCK SYSTEM
-========================= */
+Object.keys(rigs).forEach(r=>{
 
-function lockSystem(){
+let rig=rigs[r];
 
-locked = true;
+rig.p += (Math.random()-0.5)*1.5;
+rig.t += (Math.random()-0.5)*1.2;
 
-audit("SYSTEM LOCKED DUE TO BRUTE FORCE");
+/* clamp */
+rig.p=Math.max(50,Math.min(90,rig.p));
+rig.t=Math.max(40,Math.min(75,rig.t));
 
-setTimeout(()=>{
-locked = false;
-attempts = 0;
-audit("SYSTEM UNLOCKED AFTER TIMEOUT");
-},15000);
+/* alerts */
+if(rig.p>85) raiseAlarm("warning",r+" HIGH PRESSURE");
+if(rig.t>72) raiseAlarm("critical",r+" OVERHEAT");
 
-}
-
-/* =========================
-   SESSION MONITOR
-========================= */
-
-function startSessionMonitor(){
-
-setInterval(()=>{
-
-if(!sessionToken) return;
-
-let now = Date.now();
-
-/* AUTO LOGOUT AFTER 60s inactivity */
-if(now - lastActivity > 60000){
-
-audit("SESSION TIMEOUT - AUTO LOGOUT");
-logout();
-
-}
-
-},5000);
-
-}
-
-/* UPDATE ACTIVITY */
-document.addEventListener("click",()=>{
-lastActivity = Date.now();
 });
 
-/* =========================
-   LOGOUT
-========================= */
+/* UI UPDATE */
+document.getElementById("alpha").innerText =
+"P: "+rigs.Alpha.p.toFixed(1)+" | T: "+rigs.Alpha.t.toFixed(1);
 
-function logout(){
+document.getElementById("beta").innerText =
+"P: "+rigs.Beta.p.toFixed(1)+" | T: "+rigs.Beta.t.toFixed(1);
 
-audit("USER LOGGED OUT");
+document.getElementById("gamma").innerText =
+"P: "+rigs.Gamma.p.toFixed(1)+" | T: "+rigs.Gamma.t.toFixed(1);
 
-sessionToken = null;
-currentRole = null;
+/* SYSTEM STATUS */
+let status=document.getElementById("systemStatus");
 
-location.reload();
+if(rigs.Alpha.p>85||rigs.Beta.p>85||rigs.Gamma.p>85){
+status.innerText="SYSTEM HEALTH: WARNING";
+status.className="status-warn";
+}else{
+status.innerText="SYSTEM HEALTH: STABLE";
+status.className="status-ok";
+}
 
 }
 
-/* =========================
-   ROLE PROTECTION
-========================= */
+/* LOOP */
+setInterval(update,1500);
 
-function requireRole(level){
+</script>
 
-const hierarchy = {
-operator:1,
-engineer:2,
-admin:3
-};
-
-return hierarchy[currentRole] >= hierarchy[level];
-
-}
-
-/* =========================
-   AUDIT SYSTEM
-========================= */
-
-function audit(msg){
-
-const logBox = document.getElementById("log");
-
-if(logBox){
-
-const p = document.createElement("div");
-p.innerText = "[AUDIT] " + msg;
-logBox.appendChild(p);
-logBox.scrollTop = logBox.scrollHeight;
-
-}
-
-console.log("[AUDIT]",msg);
-
-}6j 
+</body>
+</html>
